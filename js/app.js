@@ -1,11 +1,17 @@
 /**
  * ==========================================================================
  * SISTEMA DE CONTROL DE ASISTENCIA - LÓGICA DE APLICACIÓN WEB (SPA)
+ * Con soporte para Base de Datos en la Nube (Firebase) y Sincronización en Tiempo Real
  * ==========================================================================
  */
 
-// --- Base de Datos Inicial en LocalStorage ---
+// --- Configuración de Base de Datos ---
+// Si deseas dejar configurada tu base de datos fija de Firebase, coloca aquí la URL:
+// Ejemplo: const FIREBASE_DB_URL_POR_DEFECTO = "https://tu-proyecto-rtdb.firebaseio.com";
+const FIREBASE_DB_URL_POR_DEFECTO = "";
+
 const DB_KEYS = {
+  FIREBASE_URL: 'asistencia_firebase_url',
   PROFESORES: 'asistencia_profesores',
   CURSOS: 'asistencia_cursos',
   ESTUDIANTES: 'asistencia_estudiantes',
@@ -13,72 +19,187 @@ const DB_KEYS = {
   SESSION: 'asistencia_sesion_activa'
 };
 
-function inicializarBaseDeDatos() {
-  if (!localStorage.getItem(DB_KEYS.PROFESORES)) {
-    const profesoresIniciales = [
-      {
-        id_profesor: 1,
-        nombre_completo: "Carlos Andrés Pérez",
-        usuario: "profesor1",
-        contrasena: "123456",
-        correo: "carlos.perez@institucion.edu.co"
-      }
-    ];
-    localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(profesoresIniciales));
-  }
+// Estado global en memoria
+let dbFirebase = null;
+let modoNubeActivo = false;
 
-  if (!localStorage.getItem(DB_KEYS.CURSOS)) {
-    const cursosIniciales = [
-      { id_curso: 1, nombre_curso: "10-A", jornada: "Mañana", id_profesor: 1 },
-      { id_curso: 2, nombre_curso: "11-B", jornada: "Tarde", id_profesor: 1 }
-    ];
-    localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(cursosIniciales));
-  }
+let estadoLocal = {
+  profesores: [],
+  cursos: [],
+  estudiantes: [],
+  asistencias: []
+};
 
-  if (!localStorage.getItem(DB_KEYS.ESTUDIANTES)) {
-    const estudiantesIniciales = [
-      { id_estudiante: 1, nombre_completo: "Ana María Gómez", documento: "1001234567", id_curso: 1, activo: 1 },
-      { id_estudiante: 2, nombre_completo: "Juan Esteban Rojas", documento: "1001234568", id_curso: 1, activo: 1 },
-      { id_estudiante: 3, nombre_completo: "Laura Sofía Díaz", documento: "1001234569", id_curso: 1, activo: 1 },
-      { id_estudiante: 4, nombre_completo: "Miguel Ángel Torres", documento: "1001234570", id_curso: 2, activo: 1 },
-      { id_estudiante: 5, nombre_completo: "Valentina Castro", documento: "1001234571", id_curso: 2, activo: 1 }
-    ];
-    localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estudiantesIniciales));
-  }
-
-  if (!localStorage.getItem(DB_KEYS.ASISTENCIAS)) {
-    const hoy = new Date().toISOString().split('T')[0];
-    const asistenciasIniciales = [
-      { id_asistencia: 1, id_estudiante: 1, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "PRESENTE", observacion: "Llegó puntual" },
-      { id_asistencia: 2, id_estudiante: 2, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "TARDE", observacion: "Ingreso 10 min tarde" },
-      { id_asistencia: 3, id_estudiante: 3, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "PRESENTE", observacion: "" }
-    ];
-    localStorage.setItem(DB_KEYS.ASISTENCIAS, JSON.stringify(asistenciasIniciales));
-  }
-}
-
-// Helpers de acceso a datos
-function getProfesores() { return JSON.parse(localStorage.getItem(DB_KEYS.PROFESORES) || '[]'); }
-function getCursos() { return JSON.parse(localStorage.getItem(DB_KEYS.CURSOS) || '[]'); }
-function getEstudiantes() { return JSON.parse(localStorage.getItem(DB_KEYS.ESTUDIANTES) || '[]'); }
-function getAsistencias() { return JSON.parse(localStorage.getItem(DB_KEYS.ASISTENCIAS) || '[]'); }
-
-function saveCursos(data) { localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(data)); }
-function saveEstudiantes(data) { localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(data)); }
-function saveAsistencias(data) { localStorage.setItem(DB_KEYS.ASISTENCIAS, JSON.stringify(data)); }
-
-// Sesión actual
 let usuarioActual = null;
 
 // ==========================================================================
-// INICIALIZACIÓN Y NAVEGACIÓN
+// INICIALIZACIÓN
 // ==========================================================================
-document.addEventListener('DOMContentLoaded', () => {
-  inicializarBaseDeDatos();
+document.addEventListener('DOMContentLoaded', async () => {
+  inicializarDatosPorDefecto();
+  await inicializarConexionNube();
   verificarSesion();
   configurarEventos();
 });
 
+function inicializarDatosPorDefecto() {
+  const profesoresIniciales = [
+    {
+      id_profesor: 1,
+      nombre_completo: "Carlos Andrés Pérez",
+      usuario: "profesor1",
+      contrasena: "123456",
+      correo: "carlos.perez@institucion.edu.co"
+    }
+  ];
+
+  const cursosIniciales = [
+    { id_curso: 1, nombre_curso: "10-A", jornada: "Mañana", id_profesor: 1 },
+    { id_curso: 2, nombre_curso: "11-B", jornada: "Tarde", id_profesor: 1 }
+  ];
+
+  const estudiantesIniciales = [
+    { id_estudiante: 1, nombre_completo: "Ana María Gómez", documento: "1001234567", id_curso: 1, activo: 1 },
+    { id_estudiante: 2, nombre_completo: "Juan Esteban Rojas", documento: "1001234568", id_curso: 1, activo: 1 },
+    { id_estudiante: 3, nombre_completo: "Laura Sofía Díaz", documento: "1001234569", id_curso: 1, activo: 1 },
+    { id_estudiante: 4, nombre_completo: "Miguel Ángel Torres", documento: "1001234570", id_curso: 2, activo: 1 },
+    { id_estudiante: 5, nombre_completo: "Valentina Castro", documento: "1001234571", id_curso: 2, activo: 1 }
+  ];
+
+  const hoy = new Date().toISOString().split('T')[0];
+  const asistenciasIniciales = [
+    { id_asistencia: 1, id_estudiante: 1, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "PRESENTE", observacion: "Llegó puntual" },
+    { id_asistencia: 2, id_estudiante: 2, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "TARDE", observacion: "Ingreso 10 min tarde" },
+    { id_asistencia: 3, id_estudiante: 3, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "PRESENTE", observacion: "" }
+  ];
+
+  if (!localStorage.getItem(DB_KEYS.PROFESORES)) {
+    localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(profesoresIniciales));
+  }
+  if (!localStorage.getItem(DB_KEYS.CURSOS)) {
+    localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(cursosIniciales));
+  }
+  if (!localStorage.getItem(DB_KEYS.ESTUDIANTES)) {
+    localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estudiantesIniciales));
+  }
+  if (!localStorage.getItem(DB_KEYS.ASISTENCIAS)) {
+    localStorage.setItem(DB_KEYS.ASISTENCIAS, JSON.stringify(asistenciasIniciales));
+  }
+
+  // Cargar estado local
+  estadoLocal.profesores = JSON.parse(localStorage.getItem(DB_KEYS.PROFESORES));
+  estadoLocal.cursos = JSON.parse(localStorage.getItem(DB_KEYS.CURSOS));
+  estadoLocal.estudiantes = JSON.parse(localStorage.getItem(DB_KEYS.ESTUDIANTES));
+  estadoLocal.asistencias = JSON.parse(localStorage.getItem(DB_KEYS.ASISTENCIAS));
+}
+
+// ==========================================================================
+// CONEXIÓN Y SINCRONIZACIÓN EN LA NUBE (FIREBASE)
+// ==========================================================================
+async function inicializarConexionNube() {
+  const urlGuardada = localStorage.getItem(DB_KEYS.FIREBASE_URL) || FIREBASE_DB_URL_POR_DEFECTO;
+
+  if (urlGuardada && window.firebase) {
+    try {
+      const cleanUrl = urlGuardada.trim();
+      const config = { databaseURL: cleanUrl };
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(config);
+      }
+      dbFirebase = firebase.database();
+      modoNubeActivo = true;
+
+      actualizarIndicadorNube(true);
+
+      // Escuchar cambios en tiempo real desde la nube
+      dbFirebase.ref('asistencia_db').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          if (data.profesores) estadoLocal.profesores = Object.values(data.profesores);
+          if (data.cursos) estadoLocal.cursos = Object.values(data.cursos);
+          if (data.estudiantes) estadoLocal.estudiantes = Object.values(data.estudiantes);
+          if (data.asistencias) estadoLocal.asistencias = Object.values(data.asistencias);
+
+          // Guardar copia de respaldo en LocalStorage
+          localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(estadoLocal.profesores));
+          localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(estadoLocal.cursos));
+          localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estadoLocal.estudiantes));
+          localStorage.setItem(DB_KEYS.ASISTENCIAS, JSON.stringify(estadoLocal.asistencias));
+
+          // Actualizar vista activa en tiempo real
+          actualizarModuloActivo();
+        } else {
+          // Si la base de datos en la nube está vacía, sincronizar los datos locales iniciales
+          sincronizarTodoANube();
+        }
+      });
+
+      console.log("[Nube] Sincronización en tiempo real activa con Firebase.");
+    } catch (e) {
+      console.warn("[Nube] No se pudo conectar a Firebase:", e);
+      modoNubeActivo = false;
+      actualizarIndicadorNube(false);
+    }
+  } else {
+    modoNubeActivo = false;
+    actualizarIndicadorNube(false);
+  }
+}
+
+function actualizarIndicadorNube(conectado) {
+  const icon = document.getElementById('cloudStatusIcon');
+  const text = document.getElementById('cloudStatusText');
+  if (!icon || !text) return;
+
+  if (conectado) {
+    icon.textContent = '🟢';
+    text.textContent = 'Nube Sincronizada';
+  } else {
+    icon.textContent = '☁️';
+    text.textContent = 'Configurar Nube';
+  }
+}
+
+function sincronizarTodoANube() {
+  if (modoNubeActivo && dbFirebase) {
+    dbFirebase.ref('asistencia_db').set({
+      profesores: estadoLocal.profesores,
+      cursos: estadoLocal.cursos,
+      estudiantes: estadoLocal.estudiantes,
+      asistencias: estadoLocal.asistencias
+    });
+  }
+}
+
+// Helpers de guardado adaptativos (Nube o Local)
+function guardarCursos(cursos) {
+  estadoLocal.cursos = cursos;
+  localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(cursos));
+  if (modoNubeActivo && dbFirebase) {
+    dbFirebase.ref('asistencia_db/cursos').set(cursos);
+  }
+}
+
+function guardarEstudiantes(estudiantes) {
+  estadoLocal.estudiantes = estudiantes;
+  localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estudiantes));
+  if (modoNubeActivo && dbFirebase) {
+    dbFirebase.ref('asistencia_db/estudiantes').set(estudiantes);
+  }
+}
+
+function guardarAsistencias(asistencias) {
+  estadoLocal.asistencias = asistencias;
+  localStorage.setItem(DB_KEYS.ASISTENCIAS, JSON.stringify(asistencias));
+  if (modoNubeActivo && dbFirebase) {
+    dbFirebase.ref('asistencia_db/asistencias').set(asistencias);
+  }
+}
+
+// ==========================================================================
+// SESIÓN Y VISTAS
+// ==========================================================================
 function verificarSesion() {
   const sesionGuardada = localStorage.getItem(DB_KEYS.SESSION);
   if (sesionGuardada) {
@@ -101,11 +222,9 @@ function mostrarDashboard() {
   document.getElementById('loginSection').style.display = 'none';
   document.getElementById('dashboardSection').style.display = 'flex';
 
-  // Cargar datos del profesor en el sidebar
   document.getElementById('sidebarNombreProfesor').textContent = usuarioActual.nombre_completo;
   document.getElementById('sidebarAvatar').textContent = usuarioActual.nombre_completo.charAt(0).toUpperCase();
 
-  // Fecha por defecto en filtros
   const hoyStr = new Date().toISOString().split('T')[0];
   document.getElementById('fechaAsistencia').value = hoyStr;
   document.getElementById('reporteFechaHasta').value = hoyStr;
@@ -114,12 +233,13 @@ function mostrarDashboard() {
   mesAtras.setMonth(mesAtras.getMonth() - 1);
   document.getElementById('reporteFechaDesde').value = mesAtras.toISOString().split('T')[0];
 
-  // Iniciar en la pestaña Tomar Asistencia
   cambiarModulo('asistencia');
 }
 
+let moduloActual = 'asistencia';
+
 function cambiarModulo(modulo) {
-  // Ocultar todos los paneles
+  moduloActual = modulo;
   document.querySelectorAll('.module-panel').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
 
@@ -139,11 +259,21 @@ function cambiarModulo(modulo) {
   }
 }
 
+function actualizarModuloActivo() {
+  if (moduloActual === 'asistencia') {
+    cargarCursosAsistencia();
+  } else if (moduloActual === 'estudiantes') {
+    cargarCursosEstudiantes();
+  } else if (moduloActual === 'reportes') {
+    cargarCursosReportes();
+    consultarReportes();
+  }
+}
+
 // ==========================================================================
-// GESTIÓN DE EVENTOS
+// EVENTOS Y CONFIGURACIÓN
 // ==========================================================================
 function configurarEventos() {
-  // Formulario Login
   document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     ejecutarLogin();
@@ -164,29 +294,49 @@ function configurarEventos() {
     }
   });
 
-  // Navegación Sidebar
   document.getElementById('navAsistencia').addEventListener('click', () => cambiarModulo('asistencia'));
   document.getElementById('navEstudiantes').addEventListener('click', () => cambiarModulo('estudiantes'));
   document.getElementById('navReportes').addEventListener('click', () => cambiarModulo('reportes'));
 
-  // Eventos Módulo Asistencia
   document.getElementById('comboCursoAsistencia').addEventListener('change', cargarEstudiantesAsistencia);
   document.getElementById('fechaAsistencia').addEventListener('change', cargarEstudiantesAsistencia);
   document.getElementById('btnMarcarTodosPresentes').addEventListener('click', marcarTodosPresentes);
   document.getElementById('btnGuardarAsistencia').addEventListener('click', guardarAsistencia);
 
-  // Eventos Módulo Estudiantes
   document.getElementById('comboCursoEstudiantes').addEventListener('change', cargarTablaEstudiantes);
   document.getElementById('btnModalNuevoCurso').addEventListener('click', () => abrirModal('modalNuevoCurso'));
   document.getElementById('btnModalNuevoEstudiante').addEventListener('click', () => abrirModal('modalNuevoEstudiante'));
   document.getElementById('formNuevoCurso').addEventListener('submit', guardarNuevoCurso);
   document.getElementById('formNuevoEstudiante').addEventListener('submit', guardarNuevoEstudiante);
 
-  // Eventos Módulo Reportes
   document.getElementById('btnConsultarReporte').addEventListener('click', consultarReportes);
   document.getElementById('btnExportarCSV').addEventListener('click', exportarReporteCSV);
 
-  // Cierres de modales
+  // Modal Nube
+  document.getElementById('btnAbrirConfigNube').addEventListener('click', () => {
+    const url = localStorage.getItem(DB_KEYS.FIREBASE_URL) || '';
+    document.getElementById('inputDatabaseURL').value = url;
+    abrirModal('modalConfigNube');
+  });
+
+  document.getElementById('formConfigNube').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = document.getElementById('inputDatabaseURL').value.trim();
+    if (url) {
+      localStorage.setItem(DB_KEYS.FIREBASE_URL, url);
+      cerrarModales();
+      showToast('Conectando a la base de datos en la nube...');
+      location.reload();
+    }
+  });
+
+  document.getElementById('btnDesconectarNube').addEventListener('click', () => {
+    localStorage.removeItem(DB_KEYS.FIREBASE_URL);
+    cerrarModales();
+    showToast('Usando almacenamiento local (LocalStorage)');
+    setTimeout(() => location.reload(), 800);
+  });
+
   document.querySelectorAll('.btn-close-modal').forEach(btn => {
     btn.addEventListener('click', () => cerrarModales());
   });
@@ -205,8 +355,7 @@ function ejecutarLogin() {
     return;
   }
 
-  const profesores = getProfesores();
-  const profesor = profesores.find(p => p.usuario === usuario && p.contrasena === pass);
+  const profesor = estadoLocal.profesores.find(p => p.usuario === usuario && p.contrasena === pass);
 
   if (profesor) {
     usuarioActual = profesor;
@@ -223,9 +372,10 @@ function ejecutarLogin() {
 // ==========================================================================
 function cargarCursosAsistencia() {
   const combo = document.getElementById('comboCursoAsistencia');
+  const valorActual = combo.value;
   combo.innerHTML = '';
 
-  const cursos = getCursos().filter(c => c.id_profesor === usuarioActual.id_profesor);
+  const cursos = estadoLocal.cursos.filter(c => c.id_profesor === usuarioActual.id_profesor);
   if (cursos.length === 0) {
     combo.innerHTML = '<option value="">Sin cursos asignados</option>';
     document.getElementById('tbodyAsistencia').innerHTML = '<tr><td colspan="4">No tienes cursos creados. Crea uno en Gestión de Estudiantes.</td></tr>';
@@ -240,6 +390,10 @@ function cargarCursosAsistencia() {
     combo.appendChild(opt);
   });
 
+  if (valorActual && cursos.some(c => c.id_curso == valorActual)) {
+    combo.value = valorActual;
+  }
+
   cargarEstudiantesAsistencia();
 }
 
@@ -251,9 +405,8 @@ function cargarEstudiantesAsistencia() {
 
   if (!idCurso || !fecha) return;
 
-  const estudiantes = getEstudiantes().filter(e => e.id_curso === idCurso && e.activo === 1);
-  const todasAsistencias = getAsistencias();
-  const asistenciasFecha = todasAsistencias.filter(a => a.id_curso === idCurso && a.fecha === fecha);
+  const estudiantes = estadoLocal.estudiantes.filter(e => e.id_curso === idCurso && e.activo === 1);
+  const asistenciasFecha = estadoLocal.asistencias.filter(a => a.id_curso === idCurso && a.fecha === fecha);
 
   if (estudiantes.length === 0) {
     tbody.innerHTML = '<tr><td colspan="4" style="padding: 24px; color: var(--text-secondary);">No hay estudiantes matriculados en este curso.</td></tr>';
@@ -289,7 +442,6 @@ function cargarEstudiantesAsistencia() {
     tbody.appendChild(tr);
   });
 
-  // Escuchar cambios en los selects para actualizar métricas en vivo
   tbody.querySelectorAll('.select-estado').forEach(sel => {
     sel.addEventListener('change', recalcularMetricasAsistenciaEnVivo);
   });
@@ -339,9 +491,7 @@ function guardarAsistencia() {
     return;
   }
 
-  let asistencias = getAsistencias();
-
-  // Filtrar eliminando registros existentes de ese curso y fecha
+  let asistencias = [...estadoLocal.asistencias];
   asistencias = asistencias.filter(a => !(a.id_curso === idCurso && a.fecha === fecha));
 
   let nextId = asistencias.length > 0 ? Math.max(...asistencias.map(a => a.id_asistencia || 0)) + 1 : 1;
@@ -364,9 +514,9 @@ function guardarAsistencia() {
     });
   });
 
-  saveAsistencias(asistencias);
+  guardarAsistencias(asistencias);
   document.getElementById('lblEstadoAsistencia').textContent = `Asistencia guardada correctamente (${formatearFecha(fecha)})`;
-  showToast('¡Asistencia registrada y guardada con éxito!');
+  showToast('¡Asistencia sincronizada y guardada con éxito!');
 }
 
 // ==========================================================================
@@ -374,9 +524,10 @@ function guardarAsistencia() {
 // ==========================================================================
 function cargarCursosEstudiantes() {
   const combo = document.getElementById('comboCursoEstudiantes');
+  const valorActual = combo.value;
   combo.innerHTML = '';
 
-  const cursos = getCursos().filter(c => c.id_profesor === usuarioActual.id_profesor);
+  const cursos = estadoLocal.cursos.filter(c => c.id_profesor === usuarioActual.id_profesor);
   if (cursos.length === 0) {
     combo.innerHTML = '<option value="">Sin cursos</option>';
     document.getElementById('tbodyEstudiantes').innerHTML = '<tr><td colspan="4">Crea un nuevo curso para comenzar.</td></tr>';
@@ -391,6 +542,10 @@ function cargarCursosEstudiantes() {
     combo.appendChild(opt);
   });
 
+  if (valorActual && cursos.some(c => c.id_curso == valorActual)) {
+    combo.value = valorActual;
+  }
+
   cargarTablaEstudiantes();
 }
 
@@ -401,9 +556,8 @@ function cargarTablaEstudiantes() {
 
   if (!idCurso) return;
 
-  const estudiantes = getEstudiantes().filter(e => e.id_curso === idCurso && e.activo === 1);
-  const cursos = getCursos();
-  const cursoActual = cursos.find(c => c.id_curso === idCurso);
+  const estudiantes = estadoLocal.estudiantes.filter(e => e.id_curso === idCurso && e.activo === 1);
+  const cursoActual = estadoLocal.cursos.find(c => c.id_curso === idCurso);
 
   if (estudiantes.length === 0) {
     tbody.innerHTML = '<tr><td colspan="4" style="padding: 24px; color: var(--text-secondary);">No hay estudiantes matriculados en este curso.</td></tr>';
@@ -439,7 +593,7 @@ function guardarNuevoCurso(e) {
     return;
   }
 
-  const cursos = getCursos();
+  const cursos = [...estadoLocal.cursos];
   const nextId = cursos.length > 0 ? Math.max(...cursos.map(c => c.id_curso || 0)) + 1 : 1;
 
   cursos.push({
@@ -449,7 +603,7 @@ function guardarNuevoCurso(e) {
     id_profesor: usuarioActual.id_profesor
   });
 
-  saveCursos(cursos);
+  guardarCursos(cursos);
   cerrarModales();
   document.getElementById('formNuevoCurso').reset();
   cargarCursosEstudiantes();
@@ -474,8 +628,7 @@ function guardarNuevoEstudiante(e) {
     return;
   }
 
-  const estudiantes = getEstudiantes();
-  // Validar documento duplicado
+  const estudiantes = [...estadoLocal.estudiantes];
   if (estudiantes.some(est => est.documento === documento && est.activo === 1)) {
     showToast('Ya existe un estudiante con ese documento', 'error');
     return;
@@ -491,7 +644,7 @@ function guardarNuevoEstudiante(e) {
     activo: 1
   });
 
-  saveEstudiantes(estudiantes);
+  guardarEstudiantes(estudiantes);
   cerrarModales();
   document.getElementById('formNuevoEstudiante').reset();
   cargarTablaEstudiantes();
@@ -500,14 +653,13 @@ function guardarNuevoEstudiante(e) {
 
 function darDeBajaEstudiante(idEstudiante, nombre) {
   if (confirm(`¿Está seguro de dar de baja a "${nombre}"?\n(Su historial de asistencia se conservará en el sistema)`)) {
-    let estudiantes = getEstudiantes();
-    estudiantes = estudiantes.map(e => {
+    let estudiantes = estadoLocal.estudiantes.map(e => {
       if (e.id_estudiante === idEstudiante) {
         return { ...e, activo: 0 };
       }
       return e;
     });
-    saveEstudiantes(estudiantes);
+    guardarEstudiantes(estudiantes);
     cargarTablaEstudiantes();
     showToast(`Estudiante "${nombre}" dado de baja`);
   }
@@ -518,15 +670,20 @@ function darDeBajaEstudiante(idEstudiante, nombre) {
 // ==========================================================================
 function cargarCursosReportes() {
   const combo = document.getElementById('comboCursoReportes');
+  const valorActual = combo.value;
   combo.innerHTML = '';
 
-  const cursos = getCursos().filter(c => c.id_profesor === usuarioActual.id_profesor);
+  const cursos = estadoLocal.cursos.filter(c => c.id_profesor === usuarioActual.id_profesor);
   cursos.forEach(c => {
     const opt = document.createElement('option');
     opt.value = c.id_curso;
     opt.textContent = `${c.nombre_curso} (${c.jornada})`;
     combo.appendChild(opt);
   });
+
+  if (valorActual && cursos.some(c => c.id_curso == valorActual)) {
+    combo.value = valorActual;
+  }
 }
 
 function consultarReportes() {
@@ -543,24 +700,22 @@ function consultarReportes() {
     return;
   }
 
-  const asistencias = getAsistencias().filter(a =>
+  const asistencias = estadoLocal.asistencias.filter(a =>
     a.id_curso === idCurso && a.fecha >= desde && a.fecha <= hasta
   );
 
-  const estudiantes = getEstudiantes();
   const mapaEstudiantes = {};
-  estudiantes.forEach(e => mapaEstudiantes[e.id_estudiante] = e.nombre_completo);
+  estadoLocal.estudiantes.forEach(e => mapaEstudiantes[e.id_estudiante] = e.nombre_completo);
 
   let conteo = { PRESENTE: 0, AUSENTE: 0, TARDE: 0, EXCUSA: 0 };
 
   if (asistencias.length === 0) {
     tbody.innerHTML = '<tr><td colspan="4" style="padding: 24px; color: var(--text-secondary);">No se encontraron registros de asistencia en el rango de fechas seleccionado.</td></tr>';
-    actualizarMetricasReporte(0, 0, 0, 0, 0);
+    actualizarMetricasReporte(0, 0, 0, 0);
     document.getElementById('lblResumenReporte').textContent = 'Total registros: 0 | Asistencia promedio: 0.0%';
     return;
   }
 
-  // Ordenar por fecha descendente
   asistencias.sort((a, b) => b.fecha.localeCompare(a.fecha));
 
   asistencias.forEach(a => {
@@ -585,8 +740,7 @@ function consultarReportes() {
 
   actualizarMetricasReporte(total, presentes, ausentes, otros);
 
-  const cursos = getCursos();
-  const cursoObj = cursos.find(c => c.id_curso === idCurso);
+  const cursoObj = estadoLocal.cursos.find(c => c.id_curso === idCurso);
   document.getElementById('lblResumenReporte').textContent =
     `Total registros: ${total} | Asistencia promedio: ${porcentaje}% | Curso: ${cursoObj ? cursoObj.nombre_curso : ''}`;
 }
@@ -603,7 +757,7 @@ function exportarReporteCSV() {
   const desde = document.getElementById('reporteFechaDesde').value;
   const hasta = document.getElementById('reporteFechaHasta').value;
 
-  const asistencias = getAsistencias().filter(a =>
+  const asistencias = estadoLocal.asistencias.filter(a =>
     a.id_curso === idCurso && a.fecha >= desde && a.fecha <= hasta
   );
 
@@ -612,11 +766,10 @@ function exportarReporteCSV() {
     return;
   }
 
-  const estudiantes = getEstudiantes();
   const mapaEstudiantes = {};
-  estudiantes.forEach(e => mapaEstudiantes[e.id_estudiante] = e);
+  estadoLocal.estudiantes.forEach(e => mapaEstudiantes[e.id_estudiante] = e);
 
-  let csvContent = '\uFEFF'; // BOM para soportar tildes en Excel
+  let csvContent = '\uFEFF';
   csvContent += 'Fecha,Estudiante,Documento,Estado,Observaciones\n';
 
   asistencias.forEach(a => {

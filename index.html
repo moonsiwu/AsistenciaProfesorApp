@@ -9,6 +9,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDKs (Para sincronización en tiempo real entre múltiples computadoras) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -76,6 +80,14 @@
         <button type="button" class="nav-item" id="navEstudiantes">Gestión de Estudiantes</button>
         <button type="button" class="nav-item" id="navReportes">Reportes y Consultas</button>
       </nav>
+
+      <!-- Estado de la Nube y Botón de Configuración -->
+      <div style="margin-top: auto; padding-bottom: 12px; text-align: center;">
+        <button type="button" id="btnAbrirConfigNube" class="btn-demo-fill" style="width: 100%; padding: 8px; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span id="cloudStatusIcon">☁️</span>
+          <span id="cloudStatusText">Configurar Nube</span>
+        </button>
+      </div>
 
       <div class="sidebar-footer">
         <button type="button" class="btn-logout" id="btnLogout">Cerrar Sesión</button>
@@ -330,6 +342,39 @@
         <div class="modal-actions">
           <button type="button" class="btn-secondary btn-close-modal">Cancelar</button>
           <button type="submit" class="btn-primary" style="width: auto;">Registrar Estudiante</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Configuración de Base de Datos en la Nube (Firebase) -->
+  <div id="modalConfigNube" class="modal-backdrop">
+    <div class="modal-card" style="max-width: 520px;">
+      <h3 class="modal-title">☁️ Sincronización en la Nube</h3>
+      <p class="modal-subtitle">Conecta Firebase Realtime Database para que todos los dispositivos vean los cambios en tiempo real.</p>
+
+      <form id="formConfigNube">
+        <div class="form-group" style="text-align: left;">
+          <label for="inputDatabaseURL" class="form-label">URL de tu Base de Datos Firebase (Realtime Database):</label>
+          <input type="text" id="inputDatabaseURL" class="form-input" placeholder="https://tu-proyecto-default-rtdb.firebaseio.com" />
+          <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
+            Ejemplo: <code>https://asistencia-app-default-rtdb.firebaseio.com/</code>
+          </small>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid var(--border-light); padding: 12px; border-radius: 6px; font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; text-align: left;">
+          <strong>¿Cómo obtener tu URL gratis en 2 minutos?</strong>
+          <ol style="margin-left: 18px; margin-top: 4px; line-height: 1.6;">
+            <li>Entra a <a href="https://console.firebase.google.com" target="_blank" style="color: var(--color-primary); font-weight: 600;">console.firebase.google.com</a> con tu cuenta Google.</li>
+            <li>Crea un proyecto y entra a <strong>Realtime Database</strong> > <strong>Crear base de datos</strong>.</li>
+            <li>Elige <em>Modo de prueba (Test mode)</em> y copia la URL que aparece arriba.</li>
+          </ol>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="btnDesconectarNube" class="btn-danger" style="margin-right: auto;">Usar LocalStorage</button>
+          <button type="button" class="btn-secondary btn-close-modal">Cerrar</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Guardar y Conectar</button>
         </div>
       </form>
     </div>

@@ -2,6 +2,8 @@
 
 Aplicación web moderna, responsiva y corporativa para la gestión diaria de asistencia de estudiantes por curso, control de matrícula y generación de reportes con exportación a Excel/CSV.
 
+Incluye **sincronización en tiempo real en la nube** para que múltiples computadoras o celulares vean las actualizaciones al instante.
+
 ---
 
 ## 🌟 Características Principales
@@ -10,30 +12,43 @@ Aplicación web moderna, responsiva y corporativa para la gestión diaria de asi
    - Inicio de sesión con autenticación para docentes.
    - Datos de prueba listos para evaluación rápida (`profesor1` / `123456`) con botón de autocompletar en 1 clic.
 
-2. **📅 Registro de Asistencia Diario:**
+2. **☁️ Sincronización en la Nube en Tiempo Real:**
+   - Compatible con **Firebase Realtime Database** gratuita de Google.
+   - Cuando un docente crea un curso, registra un estudiante o toma asistencia en su computadora, **se actualiza automáticamente en las demás pantallas abiertas sin recargar la página**.
+
+3. **📅 Registro de Asistencia Diario:**
    - Selección dinámica de cursos y fecha.
    - **Métricas en tiempo real:** Contadores de *Total Estudiantes, Presentes, Ausentes y Tardes/Excusas* que se actualizan al instante al interactuar con la tabla.
    - Botón de acción rápida: *"Marcar Todos Presentes"*.
    - Registro de observaciones individuales.
 
-3. **👥 Gestión de Estudiantes y Cursos:**
+4. **👥 Gestión de Estudiantes y Cursos:**
    - Creación de nuevos cursos con jornada (Mañana, Tarde, Noche, Única).
    - Matrícula de estudiantes con validación de documento único.
    - Opción para dar de baja conservando el historial de asistencia.
 
-4. **📊 Reportes y Consultas con Exportación:**
+5. **📊 Reportes y Consultas con Exportación:**
    - Filtro por curso y rango de fechas (*Desde / Hasta*).
    - Cálculo automático del porcentaje de asistencia del grupo.
    - **Exportación a CSV / Excel:** Descarga inmediata del reporte con codificación UTF-8 compatible con Microsoft Excel.
 
-5. **💾 Persistencia de Datos:**
-   - Utiliza `LocalStorage` en el navegador para guardar y recordar todos los cambios, estudiantes y asistencias sin necesidad de configurar un servidor backend.
+---
+
+## ☁️ Cómo Sincronizar Varias Computadoras (Firebase Gratis)
+
+Por defecto, la página guarda los datos en el navegador (`LocalStorage`). Para que todas las computadoras compartan la misma información por internet:
+
+1. Entra a [console.firebase.google.com](https://console.firebase.google.com) con tu cuenta de Google.
+2. Crea un proyecto gratuito y en el menú ve a **Realtime Database** > **Crear base de datos**.
+3. Elige la ubicación por defecto y selecciona **Modo de prueba (Test mode)**.
+4. Copia la URL de tu base de datos (ejemplo: `https://tu-proyecto-rtdb.firebaseio.com/`).
+5. En la aplicación web, haz clic en el botón **☁️ Configurar Nube** (en la barra lateral), pega tu URL y haz clic en **Guardar y Conectar**.
+
+*¡A partir de ese momento, cualquier cambio que hagas se reflejará al instante en todas las computadoras!*
 
 ---
 
 ## 🚀 Cómo Publicar la Página en GitHub Pages (en 3 pasos)
-
-Para que cualquier persona pueda abrir tu página directamente desde internet a través de un enlace de GitHub:
 
 1. **Sube el proyecto a tu repositorio de GitHub:**
    - Sube todos los archivos (`index.html`, carpeta `css`, carpeta `js`, etc.) a la rama principal (`main`).
