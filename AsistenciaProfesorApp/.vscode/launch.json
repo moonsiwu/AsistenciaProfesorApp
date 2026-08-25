@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Ejecutar Asistencia App",
+            "request": "launch",
+            "mainClass": "com.institucion.asistencia.Main",
+            "classPaths": [
+                "${workspaceFolder}/bin",
+                "${workspaceFolder}/lib/mysql-connector-j-9.1.0.jar",
+                "${workspaceFolder}/lib/flatlaf-3.5.4.jar"
+            ],
+            "sourcePaths": [
+                "${workspaceFolder}/src/main/java"
+            ],
+            "vmArgs": "-Dfile.encoding=UTF-8"
+        }
+    ]
+}

@@ -1,6 +1,7 @@
 package com.institucion.asistencia.util;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 
 /** Paleta de colores y fuentes centralizada, para que toda la app se vea consistente. */
 public final class Tema {
