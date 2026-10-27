@@ -175,22 +175,16 @@
     <main class="main-content" style="flex: 1; background: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow-y: auto;">
       
       <!-- Top Header -->
-      <header class="top-header" style="flex-wrap: wrap; gap: 0.75rem;">
+      <header class="top-header">
         <div class="header-left" style="display: flex; align-items: center;">
           <button class="hamburger-menu"><i class="fas fa-bars"></i></button>
           <div>
-            <div class="header-welcome">Hola, <span id="headerName">Carlos</span> <span id="headerRoleBadge" style="font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 999px; background: #dbeafe; color: #1d4ed8; margin-left: 0.4rem; font-weight: 600;">👨‍🏫 Profesor</span></div>
+            <div class="header-welcome">Hola, <span id="headerName">Carlos</span></div>
             <div class="header-breadcrumb">EduAsistencia / <span id="breadcrumbCurrent">Inicio</span></div>
           </div>
         </div>
-        <div class="header-right" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 0.35rem; background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.75rem;">
-            <span style="color: #64748b; font-weight: 600;">Comparar vista:</span>
-            <button type="button" id="btnSwitchProf1" style="padding: 0.2rem 0.5rem; border-radius: 5px; border: 1px solid #93c5fd; background: #eff6ff; color: #1d4ed8; cursor: pointer; font-weight: 600; font-size: 0.73rem;">👨‍🏫 Prof. 1</button>
-            <button type="button" id="btnSwitchProf2" style="padding: 0.2rem 0.5rem; border-radius: 5px; border: 1px solid #86efac; background: #f0fdf4; color: #15803d; cursor: pointer; font-weight: 600; font-size: 0.73rem;">👩‍🏫 Prof. 2</button>
-            <button type="button" id="btnSwitchEst1" style="padding: 0.2rem 0.5rem; border-radius: 5px; border: 1px solid #d8b4fe; background: #faf5ff; color: #7e22ce; cursor: pointer; font-weight: 600; font-size: 0.73rem;">🎓 Estudiante</button>
-          </div>
-          <span id="currentDateTime" style="font-size: 0.8rem; color: #64748b;"></span>
+        <div class="header-right">
+          <span id="currentDateTime"></span>
         </div>
       </header>
 
@@ -739,6 +733,6 @@
       }
     });
   </script>
-  <script src="js/app.js?v=20261027_3"></script>
+  <script src="js/app.js?v=20261027_4"></script>
 </body>
 </html>

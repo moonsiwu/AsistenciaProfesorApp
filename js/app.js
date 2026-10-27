@@ -567,7 +567,6 @@ function mostrarDashboard() {
   if (headerName) headerName.textContent = nombreMostrar.split(' ')[0];
 
   const sidebarRol = document.getElementById('sidebarRolUsuario');
-  const headerBadge = document.getElementById('headerRoleBadge');
   const navAsistencia = document.getElementById('navAsistencia');
   const navEstudiantes = document.getElementById('navEstudiantes');
   const navReportesTexto = document.getElementById('navReportesTexto');
@@ -576,27 +575,17 @@ function mostrarDashboard() {
 
   if (esRolEstudiante()) {
     const cursoEst = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
-    const nombreCurso = cursoEst ? `${cursoEst.nombre_curso} (${cursoEst.jornada})` : 'Sin curso';
-    if (sidebarRol) sidebarRol.textContent = `🎓 Estudiante — ${nombreCurso}`;
-    document.getElementById('sidebarAvatar').style.background = '#9333ea';
-    if (headerBadge) {
-      headerBadge.textContent = `🎓 Vista Estudiante (Solo Lectura — Curso ${cursoEst ? cursoEst.nombre_curso : ''})`;
-      headerBadge.style.background = '#f3e8ff';
-      headerBadge.style.color = '#7e22ce';
-    }
+    const nombreCurso = cursoEst ? `${cursoEst.nombre_curso} (${cursoEst.jornada})` : 'Estudiante';
+    if (sidebarRol) sidebarRol.textContent = `Estudiante — ${nombreCurso}`;
+    document.getElementById('sidebarAvatar').style.background = '#3b82f6';
     if (navAsistencia) navAsistencia.style.display = 'none';
     if (navEstudiantes) navEstudiantes.style.display = 'none';
     if (navReportesTexto) navReportesTexto.textContent = 'Mi Asistencia';
     if (navNotasTexto) navNotasTexto.textContent = 'Mis Calificaciones';
     if (btnGuardarNotas) btnGuardarNotas.style.display = 'none';
   } else {
-    if (sidebarRol) sidebarRol.textContent = `👨‍🏫 Docente Titular (${usuarioActual.usuario})`;
+    if (sidebarRol) sidebarRol.textContent = 'Docente Titular';
     document.getElementById('sidebarAvatar').style.background = '#3b82f6';
-    if (headerBadge) {
-      headerBadge.textContent = `👨‍🏫 Vista Profesor (Edición Completa — ${usuarioActual.usuario})`;
-      headerBadge.style.background = '#dbeafe';
-      headerBadge.style.color = '#1d4ed8';
-    }
     if (navAsistencia) navAsistencia.style.display = 'flex';
     if (navEstudiantes) navEstudiantes.style.display = 'flex';
     if (navReportesTexto) navReportesTexto.textContent = 'Reportes y Consultas';
@@ -865,7 +854,7 @@ function ejecutarLoginConCredenciales(usuario, pass) {
     usuarioActual = { ...profesor, rol: 'PROFESOR' };
     localStorage.setItem(DB_KEYS.SESSION, JSON.stringify(usuarioActual));
     mostrarDashboard();
-    showToast(`👨‍🏫 Vista Profesor: ${profesor.nombre_completo}`);
+    showToast(`Bienvenido, ${profesor.nombre_completo}`);
     return;
   }
 
@@ -903,7 +892,7 @@ function ejecutarLoginConCredenciales(usuario, pass) {
     };
     localStorage.setItem(DB_KEYS.SESSION, JSON.stringify(usuarioActual));
     mostrarDashboard();
-    showToast(`🎓 Vista Estudiante: ${estudiante.nombre_completo} (Solo Lectura)`);
+    showToast(`Bienvenido, ${estudiante.nombre_completo}`);
     return;
   }
 
@@ -913,7 +902,7 @@ function ejecutarLoginConCredenciales(usuario, pass) {
 }
 
 // ==========================================================================
-// MÓDULO 0: INICIO (DASHBOARD PROFESOR VS ESTUDIANTE)
+// MÓDULO 0: INICIO (DASHBOARD)
 // ==========================================================================
 function cargarDashboardInicio() {
   const inicioTitulo = document.getElementById('inicioTitulo');
@@ -929,7 +918,6 @@ function cargarDashboardInicio() {
 
   if (esRolEstudiante()) {
     const curso = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
-    const prof = curso ? estadoLocal.profesores.find(p => p.id_profesor === curso.id_profesor) : null;
     const misAsistencias = estadoLocal.asistencias.filter(a => a.id_estudiante === usuarioActual.id_estudiante);
     const presentes = misAsistencias.filter(a => a.estado === 'PRESENTE').length;
     const tasaPersonal = misAsistencias.length > 0 ? Math.round((presentes / misAsistencias.length) * 100) : 100;
@@ -938,26 +926,21 @@ function cargarDashboardInicio() {
     const notaActual = misNotas.length > 0 ? misNotas[misNotas.length - 1] : null;
     const promTexto = notaActual && notaActual.promedio ? `${notaActual.promedio} (${obtenerDesempeno(notaActual.promedio).texto})` : 'Sin calificar';
 
-    if (inicioTitulo) inicioTitulo.textContent = `Portal Estudiantil — ${usuarioActual.nombre_completo}`;
-    if (inicioSubtitulo) inicioSubtitulo.textContent = `Vista de estudiante en tiempo real (Solo lectura). Director de grupo: ${prof ? prof.nombre_completo : 'N/A'}`;
+    if (inicioTitulo) inicioTitulo.textContent = 'Panel de Control';
+    if (inicioSubtitulo) inicioSubtitulo.textContent = 'Resumen general de tu actividad académica.';
     if (label1) label1.textContent = 'Mi Curso Actual';
     if (label2) label2.textContent = 'Mi Promedio Académico';
-    if (label3) label3.textContent = 'Mi Asistencia Personal';
+    if (label3) label3.textContent = 'Mi Asistencia';
 
     if (val1) val1.textContent = curso ? `${curso.nombre_curso} (${curso.jornada})` : 'N/A';
     if (val2) val2.textContent = promTexto;
-    if (val3) val3.textContent = `${tasaPersonal}% (${presentes}/${misAsistencias.length})`;
+    if (val3) val3.textContent = `${tasaPersonal}%`;
 
-    const ultimaAsist = misAsistencias.length > 0 ? misAsistencias[misAsistencias.length - 1] : null;
     if (bannerTitulo) {
-      bannerTitulo.innerHTML = `<i class="fas fa-user-graduate"></i> Comparación: ¿Qué ve un Estudiante vs un Profesor?`;
+      bannerTitulo.innerHTML = `<i class="fas fa-bullhorn text-blue-500"></i> Avisos Recientes`;
     }
     if (bannerTexto) {
-      bannerTexto.innerHTML = `
-        <strong>🔒 Modo Solo Lectura Personal:</strong> Como estudiante, no puedes modificar la asistencia ni las notas de otros compañeros.<br>
-        • <strong>Última asistencia registrada por tu profesor:</strong> ${ultimaAsist ? `<span class="badge badge-${ultimaAsist.estado.toLowerCase()}">${ultimaAsist.estado}</span> el ${formatearFecha(ultimaAsist.fecha)} (${ultimaAsist.observacion || 'Sin observaciones'})` : 'Sin registros aún'}<br>
-        • <strong>Sincronización en vivo:</strong> Si el profesor <code>${prof ? prof.usuario : 'profesor1'}</code> cambia tu asistencia o tus calificaciones en otra pestaña o computadora, tus datos se actualizarán aquí al instante.
-      `;
+      bannerTexto.textContent = 'No hay avisos nuevos por el momento. ¡Que tengas un excelente día de clases!';
     }
     return;
   }
@@ -965,7 +948,6 @@ function cargarDashboardInicio() {
   // VISTA PROFESOR
   const cursos = estadoLocal.cursos.filter(c => c.id_profesor === usuarioActual.id_profesor);
   const idsCursos = cursos.map(c => c.id_curso);
-  const nombresCursos = cursos.map(c => `${c.nombre_curso} (${c.jornada})`).join(', ') || 'Ninguno';
   
   const estudiantes = estadoLocal.estudiantes.filter(e => idsCursos.includes(e.id_curso) && e.activo === 1);
   const asistencias = estadoLocal.asistencias.filter(a => idsCursos.includes(a.id_curso));
@@ -979,9 +961,9 @@ function cargarDashboardInicio() {
     porcentajeAsistenciaHoy = Math.round((presentes / asistenciasHoy.length) * 100);
   }
 
-  if (inicioTitulo) inicioTitulo.textContent = `Panel de Control Docente — ${usuarioActual.nombre_completo}`;
-  if (inicioSubtitulo) inicioSubtitulo.textContent = `Gestión académica de tus cursos asignados: ${nombresCursos}`;
-  if (label1) label1.textContent = 'Estudiantes en mis Cursos';
+  if (inicioTitulo) inicioTitulo.textContent = 'Panel de Control';
+  if (inicioSubtitulo) inicioSubtitulo.textContent = 'Resumen general de tu actividad académica.';
+  if (label1) label1.textContent = 'Estudiantes Totales';
   if (label2) label2.textContent = 'Cursos Asignados';
   if (label3) label3.textContent = 'Tasa de Asistencia Hoy';
 
@@ -990,14 +972,10 @@ function cargarDashboardInicio() {
   if (val3) val3.textContent = porcentajeAsistenciaHoy + '%';
 
   if (bannerTitulo) {
-    bannerTitulo.innerHTML = `<i class="fas fa-chalkboard-teacher"></i> Modo Profesor Activo (${usuarioActual.usuario}) — Edición en Tiempo Real`;
+    bannerTitulo.innerHTML = `<i class="fas fa-bullhorn text-blue-500"></i> Avisos Recientes`;
   }
   if (bannerTexto) {
-    bannerTexto.innerHTML = `
-      <strong>✏️ Control Total Docente:</strong> Tienes asignados los cursos <strong>${nombresCursos}</strong> con <strong>${estudiantes.length} estudiantes</strong> activos.<br>
-      • Desde el menú izquierdo puedes <strong>Tomar Asistencia</strong>, <strong>Matricular o Dar de Baja Estudiantes</strong> y <strong>Calificar Notas</strong>.<br>
-      • Puedes usar los botones superiores (<code>👨‍🏫 Prof. 1</code>, <code>👩‍🏫 Prof. 2</code>, <code>🎓 Estudiante</code>) para comparar al instante cómo ve la plataforma cada rol.
-    `;
+    bannerTexto.textContent = 'No hay avisos nuevos por el momento. ¡Que tengas un excelente día de clases!';
   }
 }
 
@@ -1326,7 +1304,7 @@ function cargarCursosReportes() {
 
   if (esRolEstudiante()) {
     if (repTitulo) repTitulo.textContent = 'Mi Historial de Asistencia';
-    if (repSub) repSub.textContent = 'Consulta tus asistencias, llegadas tarde y excusas registradas por tu profesor en tiempo real (Solo lectura)';
+    if (repSub) repSub.textContent = 'Consulte su historial de asistencia por rango de fechas';
     const miCurso = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
     if (miCurso) {
       const opt = document.createElement('option');
@@ -1497,8 +1475,8 @@ function cargarCursosNotas() {
   const btnGuardarNotas = document.getElementById('btnGuardarNotas');
 
   if (esRolEstudiante()) {
-    if (notasTitulo) notasTitulo.textContent = 'Mis Calificaciones — Boletín Académico';
-    if (notasSub) notasSub.textContent = 'Vista de solo lectura sincronizada en tiempo real con las calificaciones registradas por tu profesor';
+    if (notasTitulo) notasTitulo.textContent = 'Mis Calificaciones';
+    if (notasSub) notasSub.textContent = 'Sistema integral de evaluación inspirado en SISMAC';
     if (btnGuardarNotas) btnGuardarNotas.style.display = 'none';
 
     const miCurso = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
@@ -1515,7 +1493,7 @@ function cargarCursosNotas() {
   }
 
   if (notasTitulo) notasTitulo.textContent = 'Gestión de Calificaciones';
-  if (notasSub) notasSub.textContent = 'Sistema integral de evaluación inspirado en SISMAC (Modo Docente Editable)';
+  if (notasSub) notasSub.textContent = 'Sistema integral de evaluación inspirado en SISMAC';
   if (btnGuardarNotas) btnGuardarNotas.style.display = 'inline-block';
   combo.disabled = false;
 
