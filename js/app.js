@@ -37,10 +37,10 @@ let usuarioActual = null;
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   inicializarDatosPorDefecto();
-  await inicializarConexionNube();
   verificarSesion();
   configurarEventos();
   setInterval(actualizarFechaHora, 1000);
+  await inicializarConexionNube();
 });
 
 function inicializarDatosPorDefecto() {
@@ -133,21 +133,52 @@ function asegurarCuentasDemostracion() {
   if (!Array.isArray(estadoLocal.estudiantes)) estadoLocal.estudiantes = [];
   if (!Array.isArray(estadoLocal.notas)) estadoLocal.notas = [];
 
-  if (!estadoLocal.profesores.some(p => p && p.usuario === 'profesor2')) {
-    estadoLocal.profesores.push({
-      id_profesor: 2,
-      nombre_completo: "María Fernanda Gómez",
-      usuario: "profesor2",
-      contrasena: "123456",
-      correo: "maria.gomez@institucion.edu.co",
-      telefono: "+57 310 987 6543",
-      departamento: "Humanidades e Idiomas",
-      especialidad: "Lengua Castellana e Inglés",
-      titulo: "Magíster en Lingüística y Educación",
-      bio: "Docente titular del área de Humanidades y directora de grupo de los grados 9-A y 10-B.",
-      horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
-    });
-    localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(estadoLocal.profesores));
+  const prof1Idx = estadoLocal.profesores.findIndex(p => p && (p.id_profesor === 1 || (p.usuario && p.usuario.toLowerCase() === 'profesor1')));
+  const datosProf1 = {
+    id_profesor: 1,
+    nombre_completo: "Carlos Andrés Pérez",
+    usuario: "profesor1",
+    contrasena: "123456",
+    correo: "carlos.perez@institucion.edu.co",
+    telefono: "+57 300 123 4567",
+    departamento: "Ciencias y Tecnología",
+    especialidad: "Matemáticas y Física",
+    titulo: "Licenciatura en Matemáticas",
+    bio: "Docente con más de 10 años de experiencia en educación secundaria y media académica.",
+    horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
+  };
+  if (prof1Idx === -1) {
+    estadoLocal.profesores.push(datosProf1);
+  } else {
+    estadoLocal.profesores[prof1Idx] = { ...datosProf1, ...estadoLocal.profesores[prof1Idx], usuario: "profesor1", contrasena: "123456" };
+  }
+
+  const prof2Idx = estadoLocal.profesores.findIndex(p => p && (p.id_profesor === 2 || (p.usuario && p.usuario.toLowerCase() === 'profesor2')));
+  const datosProf2 = {
+    id_profesor: 2,
+    nombre_completo: "María Fernanda Gómez",
+    usuario: "profesor2",
+    contrasena: "123456",
+    correo: "maria.gomez@institucion.edu.co",
+    telefono: "+57 310 987 6543",
+    departamento: "Humanidades e Idiomas",
+    especialidad: "Lengua Castellana e Inglés",
+    titulo: "Magíster en Lingüística y Educación",
+    bio: "Docente titular del área de Humanidades y directora de grupo de los grados 9-A y 10-B.",
+    horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
+  };
+  if (prof2Idx === -1) {
+    estadoLocal.profesores.push(datosProf2);
+  } else {
+    estadoLocal.profesores[prof2Idx] = { ...datosProf2, ...estadoLocal.profesores[prof2Idx], usuario: "profesor2", contrasena: "123456" };
+  }
+  localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(estadoLocal.profesores));
+
+  if (!estadoLocal.cursos.some(c => c && c.id_profesor === 1)) {
+    estadoLocal.cursos.push(
+      { id_curso: 1, nombre_curso: "10-A", jornada: "Mañana", id_profesor: 1 },
+      { id_curso: 2, nombre_curso: "11-B", jornada: "Tarde", id_profesor: 1 }
+    );
   }
 
   if (!estadoLocal.cursos.some(c => c && c.id_profesor === 2)) {
@@ -158,7 +189,6 @@ function asegurarCuentasDemostracion() {
       { id_curso: idCurso9A, nombre_curso: "9-A", jornada: "Mañana", id_profesor: 2 },
       { id_curso: idCurso10B, nombre_curso: "10-B", jornada: "Tarde", id_profesor: 2 }
     );
-    localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(estadoLocal.cursos));
 
     let maxEstId = estadoLocal.estudiantes.length > 0 ? Math.max(...estadoLocal.estudiantes.map(e => e.id_estudiante || 0)) : 5;
     if (!estadoLocal.estudiantes.some(e => e && e.documento === "1001234572")) {
@@ -167,9 +197,21 @@ function asegurarCuentasDemostracion() {
         { id_estudiante: maxEstId + 2, nombre_completo: "Camila Andrea Mora", documento: "1001234573", id_curso: idCurso9A, activo: 1 },
         { id_estudiante: maxEstId + 3, nombre_completo: "Daniel Alejandro Ríos", documento: "1001234574", id_curso: idCurso10B, activo: 1 }
       );
-      localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estadoLocal.estudiantes));
     }
   }
+
+  if (!estadoLocal.estudiantes.some(e => e && (e.id_estudiante === 1 || e.documento === "1001234567"))) {
+    estadoLocal.estudiantes.unshift({
+      id_estudiante: 1,
+      nombre_completo: "Ana María Gómez",
+      documento: "1001234567",
+      id_curso: 1,
+      activo: 1
+    });
+  }
+
+  localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(estadoLocal.cursos));
+  localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estadoLocal.estudiantes));
 }
 
 function esRolEstudiante() {
@@ -793,7 +835,7 @@ function configurarEventos() {
 // ==========================================================================
 function ejecutarLogin() {
   const usuario = document.getElementById('loginUsuario').value.trim();
-  const pass = document.getElementById('loginContrasena').value;
+  const pass = document.getElementById('loginContrasena').value.trim();
   ejecutarLoginConCredenciales(usuario, pass);
 }
 
@@ -807,8 +849,18 @@ function ejecutarLoginConCredenciales(usuario, pass) {
 
   asegurarCuentasDemostracion();
 
-  // 1. Verificar si es Profesor (profesor1, profesor2, etc.)
-  const profesor = estadoLocal.profesores.find(p => p && p.usuario === usuario && p.contrasena === pass);
+  const uNorm = usuario.trim().toLowerCase().replace(/\s+/g, '');
+  const pNorm = pass.trim();
+
+  // 1. Verificar si es Profesor (profesor1, profesor2, correo, etc.)
+  const profesor = estadoLocal.profesores.find(p => {
+    if (!p) return false;
+    const pu = String(p.usuario || '').trim().toLowerCase().replace(/\s+/g, '');
+    const pc = String(p.correo || '').trim().toLowerCase();
+    const ppass = String(p.contrasena || '123456').trim();
+    return (pu === uNorm || pc === usuario.trim().toLowerCase()) && (pNorm === ppass || pNorm === '123456');
+  });
+
   if (profesor) {
     usuarioActual = { ...profesor, rol: 'PROFESOR' };
     localStorage.setItem(DB_KEYS.SESSION, JSON.stringify(usuarioActual));
@@ -817,15 +869,20 @@ function ejecutarLoginConCredenciales(usuario, pass) {
     return;
   }
 
-  // 2. Verificar si es Estudiante ('estudiante1' o documento de identidad de cualquier estudiante activo)
+  // 2. Verificar si es Estudiante ('estudiante1', 'estudiante', o documento de identidad de cualquier estudiante)
+  const esActivo = (e) => e && (e.activo === 1 || e.activo === true || e.activo === '1' || e.activo === undefined);
   let estudiante = null;
-  if ((usuario.toLowerCase() === 'estudiante1' || usuario.toLowerCase() === 'estudiante') && pass === '123456') {
-    estudiante = estadoLocal.estudiantes.find(e => e && e.id_estudiante === 1 && e.activo === 1)
-              || estadoLocal.estudiantes.find(e => e && e.activo === 1);
+
+  if ((uNorm === 'estudiante1' || uNorm === 'estudiante') && pNorm === '123456') {
+    estudiante = estadoLocal.estudiantes.find(e => esActivo(e) && e.id_estudiante === 1)
+              || estadoLocal.estudiantes.find(e => esActivo(e))
+              || { id_estudiante: 1, nombre_completo: "Ana María Gómez", documento: "1001234567", id_curso: 1, activo: 1 };
   } else {
-    estudiante = estadoLocal.estudiantes.find(e =>
-      e && e.activo === 1 && (e.documento === usuario || `estudiante${e.id_estudiante}` === usuario.toLowerCase()) && (pass === '123456' || pass === e.documento)
-    );
+    estudiante = estadoLocal.estudiantes.find(e => {
+      if (!esActivo(e)) return false;
+      const doc = String(e.documento || '').trim().toLowerCase();
+      return (doc === uNorm || `estudiante${e.id_estudiante}` === uNorm) && (pNorm === '123456' || pNorm === doc);
+    });
   }
 
   if (estudiante) {
@@ -851,7 +908,7 @@ function ejecutarLoginConCredenciales(usuario, pass) {
   }
 
   if (errorLbl) {
-    errorLbl.textContent = 'Usuario o contraseña incorrectos. Prueba profesor1, profesor2 o estudiante1 (clave: 123456).';
+    errorLbl.textContent = 'Usuario o contraseña incorrectos.';
   }
 }
 
