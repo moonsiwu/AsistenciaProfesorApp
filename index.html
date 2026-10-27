@@ -178,7 +178,7 @@
         <div class="header-left" style="display: flex; align-items: center;">
           <button class="hamburger-menu"><i class="fas fa-bars"></i></button>
           <div>
-            <div class="header-welcome">Hola, <span id="headerName">Carlos</span></div>
+            <div class="header-welcome">Hola, <span id="headerName">Fernando </span></div>
             <div class="header-breadcrumb">EduAsistencia / <span id="breadcrumbCurrent">Inicio</span></div>
           </div>
         </div>
@@ -401,7 +401,6 @@
         <div id="panelNotas" class="module-panel" style="display: none;">
           <div class="page-header" style="margin-bottom: 2rem;">
             <h2 class="page-title" style="font-size: 1.5rem; color: #1e293b; margin-bottom: 0.25rem;">Gestión de Calificaciones</h2>
-            <p class="page-subtitle" style="color: #64748b;">Sistema integral de evaluación inspirado en SISMAC</p>
           </div>
 
           <div class="card filter-card" style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; box-shadow: 0 1px 3px rgba(0,0,0,0.1); flex-wrap: wrap;">
@@ -687,40 +686,6 @@
       </form>
     </div>
   </div>
-
-  <!-- Modal Configuración de Base de Datos en la Nube (Firebase) -->
-  <div id="modalConfigNube" class="modal-backdrop" style="display: none;">
-    <div class="modal-card" style="max-width: 520px;">
-      <h3 class="modal-title">☁️ Sincronización en la Nube</h3>
-      <p class="modal-subtitle">Conecta Firebase Realtime Database para que todos los dispositivos vean los cambios en tiempo real.</p>
-
-      <form id="formConfigNube">
-        <div class="form-group" style="text-align: left;">
-          <label for="inputDatabaseURL" class="form-label">URL de tu Base de Datos Firebase (Realtime Database):</label>
-          <input type="text" id="inputDatabaseURL" class="form-input" placeholder="https://tu-proyecto-default-rtdb.firebaseio.com" />
-          <small style="color: var(--text-muted); font-size: 11.5px; display: block; margin-top: 4px;">
-            Ejemplo: <code>https://asistencia-app-default-rtdb.firebaseio.com/</code>
-          </small>
-        </div>
-
-        <div style="background: #f8fafc; border: 1px solid var(--border-light); padding: 12px; border-radius: 6px; font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; text-align: left;">
-          <strong>¿Cómo obtener tu URL gratis en 2 minutos?</strong>
-          <ol style="margin-left: 18px; margin-top: 4px; line-height: 1.6;">
-            <li>Entra a <a href="https://console.firebase.google.com" target="_blank" style="color: var(--color-primary); font-weight: 600;">console.firebase.google.com</a> con tu cuenta Google.</li>
-            <li>Crea un proyecto y entra a <strong>Realtime Database</strong> > <strong>Crear base de datos</strong>.</li>
-            <li>Elige <em>Modo de prueba (Test mode)</em> y copia la URL que aparece arriba.</li>
-          </ol>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" id="btnDesconectarNube" class="btn-danger" style="margin-right: auto;">Usar LocalStorage</button>
-          <button type="button" class="btn-secondary btn-close-modal">Cerrar</button>
-          <button type="submit" class="btn-primary" style="width: auto;">Guardar y Conectar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Contenedor de Notificaciones Toast -->
   <div id="toastContainer" class="toast-container"></div>
 
