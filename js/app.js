@@ -103,17 +103,27 @@ function inicializarDatosPorDefecto() {
 }
 
 // ==========================================================================
-// CONEXIÓN Y SINCRONIZACIÓN EN LA NUBE (FIREBASE + SERVIDOR NUBE WEB/JAVA)
+// CONEXIÓN Y SINCRONIZACIÓN EN LA NUBE (GLOBAL INTERNET + FIREBASE + JAVA)
 // ==========================================================================
 const CLOUD_SYNC_BASE = (window.location.protocol.startsWith('http') && window.location.port === '8080')
   ? window.location.origin
   : 'http://localhost:8080';
 
+const PUBLIC_CLOUD_TOPIC = 'eduasistencia_sync_moonsiwu_2026_v1';
+const PUBLIC_CLOUD_URL = `https://ntfy.sh/${PUBLIC_CLOUD_TOPIC}`;
+const CLIENT_INSTANCE_ID = 'web_' + Math.random().toString(36).slice(2, 10);
+
 let servidorLocalConectado = false;
+let nubePublicaConectada = false;
 let sseConnection = null;
+let publicSseConnection = null;
+let ultimaVersionAplicada = 0;
 
 function aplicarDatosRecibidosDeNube(data) {
   if (!data || typeof data !== 'object') return;
+  if (data.v && data.v <= ultimaVersionAplicada) return;
+  if (data.v) ultimaVersionAplicada = data.v;
+
   if (data.profesores) estadoLocal.profesores = Object.values(data.profesores).filter(Boolean);
   if (data.cursos) estadoLocal.cursos = Object.values(data.cursos).filter(Boolean);
   if (data.estudiantes) estadoLocal.estudiantes = Object.values(data.estudiantes).filter(Boolean);
@@ -131,8 +141,96 @@ function aplicarDatosRecibidosDeNube(data) {
   }
 }
 
+async function extraerEstadoDeEventoNtfy(evtObj) {
+  if (!evtObj || evtObj.event !== 'message') return null;
+  try {
+    if (evtObj.attachment && evtObj.attachment.url) {
+      const attRes = await fetch(evtObj.attachment.url);
+      if (attRes.ok) return await attRes.json();
+    }
+    if (evtObj.message) {
+      return JSON.parse(evtObj.message);
+    }
+  } catch (e) {
+    // Ignorar mensaje que no sea JSON de estado
+  }
+  return null;
+}
+
+async function conectarNubePublicaInternet() {
+  try {
+    // 1. Obtener el último estado guardado en la nube pública HTTPS
+    const res = await fetch(`${PUBLIC_CLOUD_URL}/json?poll=1&since=all`);
+    if (res.ok) {
+      const text = await res.text();
+      const lines = text.trim().split('\n').filter(Boolean);
+      for (let i = lines.length - 1; i >= 0; i--) {
+        try {
+          const evt = JSON.parse(lines[i]);
+          const estado = await extraerEstadoDeEventoNtfy(evt);
+          if (estado && (estado.cursos || estado.estudiantes)) {
+            aplicarDatosRecibidosDeNube(estado);
+            // Si tenemos servidor local (Java) conectado, actualizarlo también
+            if (servidorLocalConectado) {
+              fetch(`${CLOUD_SYNC_BASE}/asistencia_db.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify(estado)
+              }).catch(() => {});
+            }
+            break;
+          }
+        } catch (e) {}
+      }
+      nubePublicaConectada = true;
+      modoNubeActivo = true;
+      actualizarIndicadorNube(true, { publicCloud: true });
+    }
+
+    // 2. Suscribirse en tiempo real por HTTPS SSE para recibir al instante lo que haga cualquier usuario en GitHub Pages
+    if (window.EventSource && !publicSseConnection) {
+      publicSseConnection = new EventSource(`${PUBLIC_CLOUD_URL}/sse`);
+      publicSseConnection.onmessage = async (event) => {
+        try {
+          const evt = JSON.parse(event.data);
+          const estado = await extraerEstadoDeEventoNtfy(evt);
+          if (estado && estado.sender !== CLIENT_INSTANCE_ID) {
+            aplicarDatosRecibidosDeNube(estado);
+            showToast('☁️ Datos actualizados en tiempo real desde la nube');
+          }
+        } catch (err) {
+          console.warn('[Nube Pública SSE] Aviso:', err);
+        }
+      };
+    }
+  } catch (e) {
+    console.warn('[Nube Pública] Aviso al conectar:', e);
+  }
+}
+
+function publicarEnNubePublica() {
+  const versionAhora = Date.now();
+  ultimaVersionAplicada = versionAhora;
+  const payload = {
+    v: versionAhora,
+    sender: CLIENT_INSTANCE_ID,
+    profesores: estadoLocal.profesores,
+    cursos: estadoLocal.cursos,
+    estudiantes: estadoLocal.estudiantes,
+    asistencias: estadoLocal.asistencias,
+    notas: estadoLocal.notas
+  };
+  fetch(PUBLIC_CLOUD_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }).catch(err => console.warn('[Nube Pública] Error enviando actualización:', err));
+}
+
 async function inicializarConexionNube() {
-  // 1. Intentar sincronizar con el Servidor Nube Integrado (Web + Java en tiempo real)
+  // 1. Conectar siempre a la Nube Pública en Internet (funciona en GitHub Pages entre distintas PCs y celulares)
+  await conectarNubePublicaInternet();
+
+  // 2. Intentar sincronizar también con el Servidor Nube Local (puente directo con la App de Escritorio Java)
   try {
     const statusRes = await fetch(`${CLOUD_SYNC_BASE}/api/status`);
     if (statusRes.ok) {
@@ -144,13 +242,15 @@ async function inicializarConexionNube() {
         localStorage.setItem(DB_KEYS.FIREBASE_URL, statusInfo.firebaseUrl);
       }
 
-      const dbRes = await fetch(`${CLOUD_SYNC_BASE}/asistencia_db.json`);
-      if (dbRes.ok) {
-        const initialData = await dbRes.json();
-        aplicarDatosRecibidosDeNube(initialData);
+      if (ultimaVersionAplicada === 0) {
+        const dbRes = await fetch(`${CLOUD_SYNC_BASE}/asistencia_db.json`);
+        if (dbRes.ok) {
+          const initialData = await dbRes.json();
+          aplicarDatosRecibidosDeNube(initialData);
+        }
       }
 
-      // Conectar Server-Sent Events (SSE) para actualizaciones en vivo al instante desde Java u otros navegadores
+      // Conectar Server-Sent Events (SSE) para actualizaciones en vivo al instante desde Java
       if (window.EventSource && !sseConnection) {
         sseConnection = new EventSource(`${CLOUD_SYNC_BASE}/api/events`);
         sseConnection.onmessage = (event) => {
@@ -170,7 +270,7 @@ async function inicializarConexionNube() {
     servidorLocalConectado = false;
   }
 
-  // 2. Si hay una URL externa de Google Firebase Realtime Database configurada, conectarla también
+  // 3. Si hay una URL externa de Google Firebase Realtime Database configurada, conectarla también
   const urlGuardada = (localStorage.getItem(DB_KEYS.FIREBASE_URL) || FIREBASE_DB_URL_POR_DEFECTO).trim();
   const esUrlFirebase = urlGuardada && (urlGuardada.includes('firebaseio.com') || urlGuardada.includes('firebasedatabase.app'));
 
@@ -195,15 +295,10 @@ async function inicializarConexionNube() {
       console.log("[Nube] Sincronización en tiempo real activa con Google Firebase.");
     } catch (e) {
       console.warn("[Nube] No se pudo conectar a Firebase externo:", e);
-      if (!servidorLocalConectado) {
-        modoNubeActivo = false;
-        actualizarIndicadorNube(false);
-      }
     }
-  } else if (!servidorLocalConectado) {
-    modoNubeActivo = false;
-    actualizarIndicadorNube(false);
   }
+
+  actualizarIndicadorNube(nubePublicaConectada || servidorLocalConectado || Boolean(dbFirebase));
 }
 
 function actualizarIndicadorNube(conectado, info = {}) {
@@ -228,30 +323,31 @@ function actualizarIndicadorNube(conectado, info = {}) {
       box.style.color = '#065f46';
       const fbUrl = info.firebaseUrl || localStorage.getItem(DB_KEYS.FIREBASE_URL) || '';
       if (fbUrl && fbUrl.includes('firebase')) {
-        title.textContent = '🟢 Conectado a Google Firebase + App Java';
+        title.textContent = '🟢 Conectado a Google Firebase + Nube Global';
         detail.innerHTML = `Sincronizando en tiempo real con <code>${fbUrl}</code>`;
       } else {
-        title.textContent = '🟢 Nube Sincronizada Activa (Web + App Java)';
-        const redInfo = info.lanUrl ? ` | Acceso en Red Wi-Fi: <code>${info.lanUrl}</code>` : '';
-        detail.innerHTML = `Conectado en tiempo real al servidor unificado (<code>${CLOUD_SYNC_BASE}</code>)${redInfo}`;
+        title.textContent = '🟢 Nube Global en Tiempo Real Activa (GitHub Pages + App Java)';
+        detail.innerHTML = `Cualquier cambio realizado en <code>moonsiwu.github.io</code> desde otra computadora o celular se actualiza automáticamente en todas las pantallas.`;
       }
     } else {
       box.style.background = '#fef3c7';
       box.style.borderColor = '#fde68a';
       box.style.color = '#92400e';
       title.textContent = '☁️ Modo Almacenamiento Local (LocalStorage)';
-      detail.textContent = 'Inicia ejecutar.bat o pega una URL de Firebase para sincronizar con otras pantallas y con la App Java.';
+      detail.textContent = 'Verifica tu conexión a internet para sincronizar con otras pantallas.';
     }
   }
 }
 
 function sincronizarColeccionServidorLocal(coleccion, datos) {
-  if (!servidorLocalConectado) return;
-  fetch(`${CLOUD_SYNC_BASE}/asistencia_db/${coleccion}.json`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify(datos)
-  }).catch(err => console.warn(`[Nube] Error sincronizando ${coleccion}:`, err));
+  if (servidorLocalConectado) {
+    fetch(`${CLOUD_SYNC_BASE}/asistencia_db/${coleccion}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify(datos)
+    }).catch(err => console.warn(`[Nube] Error sincronizando ${coleccion}:`, err));
+  }
+  publicarEnNubePublica();
 }
 
 function sincronizarTodoANube() {
@@ -272,6 +368,7 @@ function sincronizarTodoANube() {
       body: JSON.stringify(payload)
     }).catch(err => console.warn('[Nube] Error sincronizando todo:', err));
   }
+  publicarEnNubePublica();
 }
 
 // Helpers de guardado adaptativos (Nube Firebase + Servidor Web/Java + LocalStorage)

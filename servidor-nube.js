@@ -174,7 +174,22 @@ function actualizarConfigPropertiesJava(cloudUrl) {
   }
 }
 
+const PUBLIC_CLOUD_TOPIC = 'eduasistencia_sync_moonsiwu_2026_v1';
+const PUBLIC_CLOUD_URL = `https://ntfy.sh/${PUBLIC_CLOUD_TOPIC}`;
+const SERVER_SENDER_ID = 'node_srv_' + Math.random().toString(36).slice(2, 10);
+
 function replicarAFirebaseExterno(datos) {
+  // 1. Replicar siempre al canal público HTTPS en internet (para sincronizar con GitHub Pages en otras PCs/celulares)
+  fetch(PUBLIC_CLOUD_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      v: dbVersion,
+      sender: SERVER_SENDER_ID,
+      ...datos
+    })
+  }).catch(() => {});
+
+  // 2. Replicar también a Firebase Realtime Database si el usuario configuró una URL propia
   const cfg = leerConfigNube();
   const fbUrl = (cfg.firebaseUrl || '').trim().replace(/\/+$/, '');
   if (!fbUrl || !fbUrl.startsWith('https://') || fbUrl.includes('localhost')) {
@@ -206,6 +221,54 @@ function replicarAFirebaseExterno(datos) {
   } catch (e) {
     console.warn('[Nube] URL de Firebase inválida para replicación:', e.message);
   }
+}
+
+async function iniciarEscuchaNubePublica() {
+  try {
+    // 1. Cargar estado más reciente de internet al iniciar
+    const pollRes = await fetch(`${PUBLIC_CLOUD_URL}/json?poll=1&since=all`);
+    if (pollRes.ok) {
+      const txt = await pollRes.text();
+      const lines = txt.trim().split('\n').filter(Boolean);
+      for (let i = lines.length - 1; i >= 0; i--) {
+        try {
+          const evt = JSON.parse(lines[i]);
+          if (evt.event === 'message' && evt.message) {
+            const parsed = JSON.parse(evt.message);
+            if (parsed && (parsed.cursos || parsed.estudiantes)) {
+              guardarDB(parsed, false);
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {
+    // Sin internet temporalmente
+  }
+
+  // 2. Escuchar eventos cada 4 segundos para mantener cloud_db.json y la App Java al día con GitHub Pages
+  setInterval(async () => {
+    try {
+      const res = await fetch(`${PUBLIC_CLOUD_URL}/json?poll=1&since=10s`);
+      if (!res.ok) return;
+      const txt = await res.text();
+      const lines = txt.trim().split('\n').filter(Boolean);
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const evt = JSON.parse(lines[i]);
+        if (evt.event === 'message' && evt.message) {
+          const parsed = JSON.parse(evt.message);
+          if (parsed && parsed.sender !== SERVER_SENDER_ID && parsed.v && parsed.v > dbVersion) {
+            dbVersion = parsed.v;
+            const norm = normalizarDB(parsed);
+            fs.writeFileSync(DB_FILE, JSON.stringify(norm, null, 2), 'utf8');
+            notificarClientesSSE(norm);
+            break;
+          }
+        }
+      }
+    } catch (e) {}
+  }, 4000);
 }
 
 function notificarClientesSSE(datos) {
@@ -259,9 +322,10 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-// Inicializar base de datos y configuración al arrancar
+// Inicializar base de datos, configuración y sincronización pública en internet al arrancar
 leerDB();
 guardarConfigNube(leerConfigNube());
+iniciarEscuchaNubePublica();
 
 const server = http.createServer(async (req, res) => {
   // Cabeceras CORS y Private Network Access (PNA) para permitir conexión desde https://moonsiwu.github.io, file:// y localhost
