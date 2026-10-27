@@ -409,10 +409,10 @@ public final class ServicioNube {
 
         // Respaldo garantizado para las cuentas de demostración
         if ("profesor1".equalsIgnoreCase(uClean) && "123456".equals(pClean)) {
-            return new Profesor(1, "Carlos Andrés Pérez", "profesor1", "123456", "carlos.perez@institucion.edu.co");
+            return new Profesor(1, "Carlos Andrés Pérez", "profesor1", "carlos.perez@institucion.edu.co");
         }
         if ("profesor2".equalsIgnoreCase(uClean) && "123456".equals(pClean)) {
-            return new Profesor(2, "María Fernanda Gómez", "profesor2", "123456", "maria.gomez@institucion.edu.co");
+            return new Profesor(2, "María Fernanda Gómez", "profesor2", "maria.gomez@institucion.edu.co");
         }
 
         // Permitir también acceso de Estudiante (estudiante1 o número de documento) en modo Solo Lectura
@@ -439,7 +439,7 @@ public final class ServicioNube {
         }
 
         if (("estudiante1".equalsIgnoreCase(uClean) || "estudiante".equalsIgnoreCase(uClean) || "1001234567".equals(uClean)) && "123456".equals(pClean)) {
-            return new Profesor(1, "Ana María Gómez", "ESTUDIANTE", "123456", "Doc: 1001234567");
+            return new Profesor(1, "Ana María Gómez", "ESTUDIANTE", "Doc: 1001234567");
         }
         return null;
     }
