@@ -399,6 +399,26 @@ public final class ServicioNube {
                 }
             }
         }
+
+        // Permitir también acceso de Estudiante (estudiante1 o número de documento) en modo Solo Lectura
+        List<Map<String, Object>> estudiantes = obtenerColeccion("estudiantes");
+        for (Map<String, Object> e : estudiantes) {
+            int activo = comoEntero(e.get("activo"), 1);
+            if (activo != 1) continue;
+            int idEst = comoEntero(e.get("id_estudiante"), 1);
+            String doc = comoTexto(e.get("documento"));
+            boolean esUsuarioEst = ("estudiante1".equalsIgnoreCase(usuario) && idEst == 1)
+                    || ("estudiante" + idEst).equalsIgnoreCase(usuario)
+                    || doc.equalsIgnoreCase(usuario);
+            if (esUsuarioEst && ("123456".equals(contrasenaPlano) || doc.equals(contrasenaPlano))) {
+                Profesor pEst = new Profesor();
+                pEst.setIdProfesor(1); // Curso principal para consulta
+                pEst.setNombreCompleto(comoTexto(e.get("nombre_completo")));
+                pEst.setUsuario("ESTUDIANTE");
+                pEst.setCorreo("Doc: " + doc);
+                return pEst;
+            }
+        }
         return null;
     }
 

@@ -10,7 +10,20 @@
       "departamento": "Ciencias y Tecnología",
       "especialidad": "Matemáticas y Física",
       "titulo": "Licenciatura en Matemáticas",
-      "bio": "Docente con más de 10 años de experiencia en educación secundaria...",
+      "bio": "Docente con más de 10 años de experiencia en educación secundaria y media académica.",
+      "horario": "Lunes a Viernes, 7:00 AM - 3:00 PM"
+    },
+    {
+      "id_profesor": 2,
+      "nombre_completo": "María Fernanda Gómez",
+      "usuario": "profesor2",
+      "contrasena": "123456",
+      "correo": "maria.gomez@institucion.edu.co",
+      "telefono": "+57 310 987 6543",
+      "departamento": "Humanidades e Idiomas",
+      "especialidad": "Lengua Castellana e Inglés",
+      "titulo": "Magíster en Lingüística y Educación",
+      "bio": "Docente titular del área de Humanidades y directora de grupo de los grados 9-A y 10-B.",
       "horario": "Lunes a Viernes, 7:00 AM - 3:00 PM"
     }
   ],
@@ -26,6 +39,24 @@
       "nombre_curso": "11-B",
       "jornada": "Tarde",
       "id_profesor": 1
+    },
+    {
+      "id_curso": 3,
+      "nombre_curso": "1101",
+      "jornada": "Única",
+      "id_profesor": 1
+    },
+    {
+      "id_curso": 4,
+      "nombre_curso": "9-A",
+      "jornada": "Mañana",
+      "id_profesor": 2
+    },
+    {
+      "id_curso": 5,
+      "nombre_curso": "10-B",
+      "jornada": "Tarde",
+      "id_profesor": 2
     }
   ],
   "estudiantes": [
@@ -62,6 +93,160 @@
       "nombre_completo": "Valentina Castro",
       "documento": "1001234571",
       "id_curso": 2,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 6,
+      "nombre_completo": "waza insano",
+      "documento": "10101010",
+      "id_curso": 1,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 7,
+      "nombre_completo": "William Barrios",
+      "documento": "1",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 8,
+      "nombre_completo": "Stefany Bayuelo",
+      "documento": "2",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 9,
+      "nombre_completo": "Esteban Castillo",
+      "documento": "3",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 10,
+      "nombre_completo": "Juan Perez",
+      "documento": "4",
+      "id_curso": 3,
+      "activo": 0
+    },
+    {
+      "id_estudiante": 11,
+      "nombre_completo": "Samuel Garcia",
+      "documento": "5",
+      "id_curso": 3,
+      "activo": 0
+    },
+    {
+      "id_estudiante": 12,
+      "nombre_completo": "Santiago Martinez",
+      "documento": "6",
+      "id_curso": 3,
+      "activo": 0
+    },
+    {
+      "id_estudiante": 13,
+      "nombre_completo": "Bairon Martinez",
+      "documento": "7",
+      "id_curso": 3,
+      "activo": 0
+    },
+    {
+      "id_estudiante": 14,
+      "nombre_completo": "Yecid santiago",
+      "documento": "5",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 15,
+      "nombre_completo": "william comas",
+      "documento": "6",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 16,
+      "nombre_completo": "lerge de la victoria",
+      "documento": "7",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 17,
+      "nombre_completo": "florez mejia jannis",
+      "documento": "8",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 18,
+      "nombre_completo": "samuel garcia",
+      "documento": "9",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 19,
+      "nombre_completo": "victoria garrillo",
+      "documento": "10",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 20,
+      "nombre_completo": "geraldino guzman",
+      "documento": "11",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 21,
+      "nombre_completo": "isaac gonzalez",
+      "documento": "12",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 22,
+      "nombre_completo": "eileen granados",
+      "documento": "13",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 23,
+      "nombre_completo": "herrera stefania",
+      "documento": "14",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 24,
+      "nombre_completo": "carlos lara",
+      "documento": "15",
+      "id_curso": 3,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 25,
+      "nombre_completo": "Santiago Ramírez",
+      "documento": "1001234572",
+      "id_curso": 4,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 26,
+      "nombre_completo": "Camila Andrea Mora",
+      "documento": "1001234573",
+      "id_curso": 4,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 27,
+      "nombre_completo": "Daniel Alejandro Ríos",
+      "documento": "1001234574",
+      "id_curso": 5,
       "activo": 1
     }
   ],

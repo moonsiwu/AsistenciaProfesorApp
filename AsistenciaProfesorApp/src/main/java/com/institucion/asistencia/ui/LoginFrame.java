@@ -222,41 +222,50 @@ public class LoginFrame extends JFrame {
         panelDemo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 75));
         panelDemo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblInfoDemo = new JLabel("<html><div style='text-align: center;'><b>Datos de prueba:</b> Usuario: <code>profesor1</code> | Clave: <code>123456</code></div></html>", SwingConstants.CENTER);
-        lblInfoDemo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JLabel lblInfoDemo = new JLabel("<html><div style='text-align: center;'><b>Comparar Cuentas (Clave: 123456):</b><br><code>profesor1</code> | <code>profesor2</code> | <code>estudiante1</code></div></html>", SwingConstants.CENTER);
+        lblInfoDemo.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblInfoDemo.setForeground(new Color(0x47, 0x55, 0x69));
         lblInfoDemo.setHorizontalAlignment(SwingConstants.CENTER);
 
-        JButton btnAutoLlenar = new JButton("Usar datos de prueba") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                if (getModel().isRollover()) {
-                    g2.setColor(new Color(0xDB, 0xEA, 0xFE));
-                } else {
-                    g2.setColor(new Color(0xEE, 0xF2, 0xF6));
-                }
-                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 6, 6));
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        btnAutoLlenar.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        btnAutoLlenar.setForeground(new Color(0x1D, 0x4E, 0xD8));
-        btnAutoLlenar.setContentAreaFilled(false);
-        btnAutoLlenar.setBorderPainted(false);
-        btnAutoLlenar.setFocusPainted(false);
-        btnAutoLlenar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnAutoLlenar.setBorder(new EmptyBorder(4, 8, 4, 8));
-        btnAutoLlenar.addActionListener(e -> {
+        JPanel panelBotonesDemo = new JPanel(new GridLayout(1, 3, 6, 0));
+        panelBotonesDemo.setOpaque(false);
+
+        JButton btnProf1 = new JButton("Prof. 1");
+        btnProf1.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        btnProf1.setForeground(new Color(0x1D, 0x4E, 0xD8));
+        btnProf1.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnProf1.addActionListener(e -> {
             campoUsuario.setText("profesor1");
             campoContrasena.setText("123456");
             etiquetaError.setText(" ");
         });
 
+        JButton btnProf2 = new JButton("Prof. 2");
+        btnProf2.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        btnProf2.setForeground(new Color(0x15, 0x80, 0x3D));
+        btnProf2.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnProf2.addActionListener(e -> {
+            campoUsuario.setText("profesor2");
+            campoContrasena.setText("123456");
+            etiquetaError.setText(" ");
+        });
+
+        JButton btnEst1 = new JButton("Estudiante");
+        btnEst1.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        btnEst1.setForeground(new Color(0x7E, 0x22, 0xCE));
+        btnEst1.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnEst1.addActionListener(e -> {
+            campoUsuario.setText("estudiante1");
+            campoContrasena.setText("123456");
+            etiquetaError.setText(" ");
+        });
+
+        panelBotonesDemo.add(btnProf1);
+        panelBotonesDemo.add(btnProf2);
+        panelBotonesDemo.add(btnEst1);
+
         panelDemo.add(lblInfoDemo, BorderLayout.CENTER);
-        panelDemo.add(btnAutoLlenar, BorderLayout.SOUTH);
+        panelDemo.add(panelBotonesDemo, BorderLayout.SOUTH);
         tarjeta.add(panelDemo);
 
         // Atajo de teclado Enter

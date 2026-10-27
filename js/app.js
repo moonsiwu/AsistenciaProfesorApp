@@ -55,14 +55,29 @@ function inicializarDatosPorDefecto() {
       departamento: "Ciencias y Tecnología",
       especialidad: "Matemáticas y Física",
       titulo: "Licenciatura en Matemáticas",
-      bio: "Docente con más de 10 años de experiencia en educación secundaria...",
+      bio: "Docente con más de 10 años de experiencia en educación secundaria y media académica.",
+      horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
+    },
+    {
+      id_profesor: 2,
+      nombre_completo: "María Fernanda Gómez",
+      usuario: "profesor2",
+      contrasena: "123456",
+      correo: "maria.gomez@institucion.edu.co",
+      telefono: "+57 310 987 6543",
+      departamento: "Humanidades e Idiomas",
+      especialidad: "Lengua Castellana e Inglés",
+      titulo: "Magíster en Lingüística y Educación",
+      bio: "Docente titular del área de Humanidades y directora de grupo de los grados 9-A y 10-B.",
       horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
     }
   ];
 
   const cursosIniciales = [
     { id_curso: 1, nombre_curso: "10-A", jornada: "Mañana", id_profesor: 1 },
-    { id_curso: 2, nombre_curso: "11-B", jornada: "Tarde", id_profesor: 1 }
+    { id_curso: 2, nombre_curso: "11-B", jornada: "Tarde", id_profesor: 1 },
+    { id_curso: 3, nombre_curso: "9-A", jornada: "Mañana", id_profesor: 2 },
+    { id_curso: 4, nombre_curso: "10-B", jornada: "Tarde", id_profesor: 2 }
   ];
 
   const estudiantesIniciales = [
@@ -70,14 +85,19 @@ function inicializarDatosPorDefecto() {
     { id_estudiante: 2, nombre_completo: "Juan Esteban Rojas", documento: "1001234568", id_curso: 1, activo: 1 },
     { id_estudiante: 3, nombre_completo: "Laura Sofía Díaz", documento: "1001234569", id_curso: 1, activo: 1 },
     { id_estudiante: 4, nombre_completo: "Miguel Ángel Torres", documento: "1001234570", id_curso: 2, activo: 1 },
-    { id_estudiante: 5, nombre_completo: "Valentina Castro", documento: "1001234571", id_curso: 2, activo: 1 }
+    { id_estudiante: 5, nombre_completo: "Valentina Castro", documento: "1001234571", id_curso: 2, activo: 1 },
+    { id_estudiante: 6, nombre_completo: "Santiago Ramírez", documento: "1001234572", id_curso: 3, activo: 1 },
+    { id_estudiante: 7, nombre_completo: "Camila Andrea Mora", documento: "1001234573", id_curso: 3, activo: 1 },
+    { id_estudiante: 8, nombre_completo: "Daniel Alejandro Ríos", documento: "1001234574", id_curso: 4, activo: 1 }
   ];
 
   const hoy = new Date().toISOString().split('T')[0];
   const asistenciasIniciales = [
     { id_asistencia: 1, id_estudiante: 1, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "PRESENTE", observacion: "Llegó puntual" },
     { id_asistencia: 2, id_estudiante: 2, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "TARDE", observacion: "Ingreso 10 min tarde" },
-    { id_asistencia: 3, id_estudiante: 3, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "PRESENTE", observacion: "" }
+    { id_asistencia: 3, id_estudiante: 3, id_curso: 1, id_profesor: 1, fecha: hoy, estado: "PRESENTE", observacion: "" },
+    { id_asistencia: 4, id_estudiante: 6, id_curso: 3, id_profesor: 2, fecha: hoy, estado: "PRESENTE", observacion: "Participación activa" },
+    { id_asistencia: 5, id_estudiante: 7, id_curso: 3, id_profesor: 2, fecha: hoy, estado: "PRESENTE", observacion: "" }
   ];
 
   const notasIniciales = [
@@ -85,7 +105,10 @@ function inicializarDatosPorDefecto() {
     { id_nota: 2, id_estudiante: 2, id_curso: 1, periodo: 1, nota1: 3.0, nota2: 2.8, nota3: 3.5, nota4: 3.2, promedio: 3.13, year: 2026 },
     { id_nota: 3, id_estudiante: 3, id_curso: 1, periodo: 1, nota1: 4.8, nota2: 4.9, nota3: 5.0, nota4: 4.7, promedio: 4.85, year: 2026 },
     { id_nota: 4, id_estudiante: 4, id_curso: 2, periodo: 1, nota1: 3.5, nota2: 3.0, nota3: 3.8, nota4: 3.3, promedio: 3.40, year: 2026 },
-    { id_nota: 5, id_estudiante: 5, id_curso: 2, periodo: 1, nota1: 2.5, nota2: 2.0, nota3: 2.8, nota4: 2.3, promedio: 2.40, year: 2026 }
+    { id_nota: 5, id_estudiante: 5, id_curso: 2, periodo: 1, nota1: 2.5, nota2: 2.0, nota3: 2.8, nota4: 2.3, promedio: 2.40, year: 2026 },
+    { id_nota: 6, id_estudiante: 6, id_curso: 3, periodo: 1, nota1: 4.4, nota2: 4.6, nota3: 4.5, nota4: 4.7, promedio: 4.55, year: 2026 },
+    { id_nota: 7, id_estudiante: 7, id_curso: 3, periodo: 1, nota1: 3.9, nota2: 4.1, nota3: 4.0, nota4: 4.2, promedio: 4.05, year: 2026 },
+    { id_nota: 8, id_estudiante: 8, id_curso: 4, periodo: 1, nota1: 3.6, nota2: 3.8, nota3: 3.7, nota4: 3.9, promedio: 3.75, year: 2026 }
   ];
 
   if (!localStorage.getItem(DB_KEYS.PROFESORES)) localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(profesoresIniciales));
@@ -100,6 +123,57 @@ function inicializarDatosPorDefecto() {
   estadoLocal.estudiantes = JSON.parse(localStorage.getItem(DB_KEYS.ESTUDIANTES));
   estadoLocal.asistencias = JSON.parse(localStorage.getItem(DB_KEYS.ASISTENCIAS));
   estadoLocal.notas = JSON.parse(localStorage.getItem(DB_KEYS.NOTAS));
+
+  asegurarCuentasDemostracion();
+}
+
+function asegurarCuentasDemostracion() {
+  if (!Array.isArray(estadoLocal.profesores)) estadoLocal.profesores = [];
+  if (!Array.isArray(estadoLocal.cursos)) estadoLocal.cursos = [];
+  if (!Array.isArray(estadoLocal.estudiantes)) estadoLocal.estudiantes = [];
+  if (!Array.isArray(estadoLocal.notas)) estadoLocal.notas = [];
+
+  if (!estadoLocal.profesores.some(p => p && p.usuario === 'profesor2')) {
+    estadoLocal.profesores.push({
+      id_profesor: 2,
+      nombre_completo: "María Fernanda Gómez",
+      usuario: "profesor2",
+      contrasena: "123456",
+      correo: "maria.gomez@institucion.edu.co",
+      telefono: "+57 310 987 6543",
+      departamento: "Humanidades e Idiomas",
+      especialidad: "Lengua Castellana e Inglés",
+      titulo: "Magíster en Lingüística y Educación",
+      bio: "Docente titular del área de Humanidades y directora de grupo de los grados 9-A y 10-B.",
+      horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
+    });
+    localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(estadoLocal.profesores));
+  }
+
+  if (!estadoLocal.cursos.some(c => c && c.id_profesor === 2)) {
+    let maxCursoId = estadoLocal.cursos.length > 0 ? Math.max(...estadoLocal.cursos.map(c => c.id_curso || 0)) : 2;
+    const idCurso9A = maxCursoId + 1;
+    const idCurso10B = maxCursoId + 2;
+    estadoLocal.cursos.push(
+      { id_curso: idCurso9A, nombre_curso: "9-A", jornada: "Mañana", id_profesor: 2 },
+      { id_curso: idCurso10B, nombre_curso: "10-B", jornada: "Tarde", id_profesor: 2 }
+    );
+    localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(estadoLocal.cursos));
+
+    let maxEstId = estadoLocal.estudiantes.length > 0 ? Math.max(...estadoLocal.estudiantes.map(e => e.id_estudiante || 0)) : 5;
+    if (!estadoLocal.estudiantes.some(e => e && e.documento === "1001234572")) {
+      estadoLocal.estudiantes.push(
+        { id_estudiante: maxEstId + 1, nombre_completo: "Santiago Ramírez", documento: "1001234572", id_curso: idCurso9A, activo: 1 },
+        { id_estudiante: maxEstId + 2, nombre_completo: "Camila Andrea Mora", documento: "1001234573", id_curso: idCurso9A, activo: 1 },
+        { id_estudiante: maxEstId + 3, nombre_completo: "Daniel Alejandro Ríos", documento: "1001234574", id_curso: idCurso10B, activo: 1 }
+      );
+      localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estadoLocal.estudiantes));
+    }
+  }
+}
+
+function esRolEstudiante() {
+  return Boolean(usuarioActual && usuarioActual.rol === 'ESTUDIANTE');
 }
 
 // ==========================================================================
@@ -130,6 +204,8 @@ function aplicarDatosRecibidosDeNube(data) {
   if (data.asistencias) estadoLocal.asistencias = Object.values(data.asistencias).filter(Boolean);
   if (data.notas) estadoLocal.notas = Object.values(data.notas).filter(Boolean);
 
+  asegurarCuentasDemostracion();
+
   localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(estadoLocal.profesores));
   localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(estadoLocal.cursos));
   localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estadoLocal.estudiantes));
@@ -137,6 +213,14 @@ function aplicarDatosRecibidosDeNube(data) {
   localStorage.setItem(DB_KEYS.NOTAS, JSON.stringify(estadoLocal.notas));
 
   if (usuarioActual) {
+    if (esRolEstudiante()) {
+      const estActualizado = estadoLocal.estudiantes.find(e => e.id_estudiante === usuarioActual.id_estudiante);
+      if (estActualizado) {
+        usuarioActual.nombre_completo = estActualizado.nombre_completo;
+        usuarioActual.id_curso = estActualizado.id_curso;
+        usuarioActual.documento = estActualizado.documento;
+      }
+    }
     actualizarModuloActivo();
   }
 }
@@ -433,8 +517,50 @@ function mostrarDashboard() {
   document.getElementById('loginSection').style.display = 'none';
   document.getElementById('dashboardSection').style.display = 'flex';
 
-  document.getElementById('sidebarNombreProfesor').textContent = usuarioActual.nombre_completo;
-  document.getElementById('sidebarAvatar').textContent = usuarioActual.nombre_completo.charAt(0).toUpperCase();
+  const nombreMostrar = usuarioActual.nombre_completo || 'Usuario';
+  document.getElementById('sidebarNombreProfesor').textContent = nombreMostrar;
+  document.getElementById('sidebarAvatar').textContent = nombreMostrar.charAt(0).toUpperCase();
+
+  const headerName = document.getElementById('headerName');
+  if (headerName) headerName.textContent = nombreMostrar.split(' ')[0];
+
+  const sidebarRol = document.getElementById('sidebarRolUsuario');
+  const headerBadge = document.getElementById('headerRoleBadge');
+  const navAsistencia = document.getElementById('navAsistencia');
+  const navEstudiantes = document.getElementById('navEstudiantes');
+  const navReportesTexto = document.getElementById('navReportesTexto');
+  const navNotasTexto = document.getElementById('navNotasTexto');
+  const btnGuardarNotas = document.getElementById('btnGuardarNotas');
+
+  if (esRolEstudiante()) {
+    const cursoEst = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
+    const nombreCurso = cursoEst ? `${cursoEst.nombre_curso} (${cursoEst.jornada})` : 'Sin curso';
+    if (sidebarRol) sidebarRol.textContent = `🎓 Estudiante — ${nombreCurso}`;
+    document.getElementById('sidebarAvatar').style.background = '#9333ea';
+    if (headerBadge) {
+      headerBadge.textContent = `🎓 Vista Estudiante (Solo Lectura — Curso ${cursoEst ? cursoEst.nombre_curso : ''})`;
+      headerBadge.style.background = '#f3e8ff';
+      headerBadge.style.color = '#7e22ce';
+    }
+    if (navAsistencia) navAsistencia.style.display = 'none';
+    if (navEstudiantes) navEstudiantes.style.display = 'none';
+    if (navReportesTexto) navReportesTexto.textContent = 'Mi Asistencia';
+    if (navNotasTexto) navNotasTexto.textContent = 'Mis Calificaciones';
+    if (btnGuardarNotas) btnGuardarNotas.style.display = 'none';
+  } else {
+    if (sidebarRol) sidebarRol.textContent = `👨‍🏫 Docente Titular (${usuarioActual.usuario})`;
+    document.getElementById('sidebarAvatar').style.background = '#3b82f6';
+    if (headerBadge) {
+      headerBadge.textContent = `👨‍🏫 Vista Profesor (Edición Completa — ${usuarioActual.usuario})`;
+      headerBadge.style.background = '#dbeafe';
+      headerBadge.style.color = '#1d4ed8';
+    }
+    if (navAsistencia) navAsistencia.style.display = 'flex';
+    if (navEstudiantes) navEstudiantes.style.display = 'flex';
+    if (navReportesTexto) navReportesTexto.textContent = 'Reportes y Consultas';
+    if (navNotasTexto) navNotasTexto.textContent = 'Gestión de Notas';
+    if (btnGuardarNotas) btnGuardarNotas.style.display = 'inline-block';
+  }
 
   const hoyStr = new Date().toISOString().split('T')[0];
   const fechaAsist = document.getElementById('fechaAsistencia');
@@ -454,6 +580,9 @@ function mostrarDashboard() {
 let moduloActual = 'inicio';
 
 function cambiarModulo(modulo) {
+  if (esRolEstudiante() && (modulo === 'asistencia' || modulo === 'estudiantes')) {
+    modulo = 'inicio';
+  }
   moduloActual = modulo;
   document.querySelectorAll('.module-panel').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
@@ -522,6 +651,16 @@ function actualizarModuloActivo() {
 // ==========================================================================
 // EVENTOS Y CONFIGURACIÓN
 // ==========================================================================
+function rellenarYEntrarCuentaDemo(usuario, clave) {
+  const inputU = document.getElementById('loginUsuario');
+  const inputP = document.getElementById('loginContrasena');
+  const err = document.getElementById('loginError');
+  if (inputU) inputU.value = usuario;
+  if (inputP) inputP.value = clave;
+  if (err) err.textContent = '';
+  ejecutarLoginConCredenciales(usuario, clave);
+}
+
 function configurarEventos() {
   document.getElementById('loginForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -529,9 +668,24 @@ function configurarEventos() {
   });
 
   document.getElementById('btnDemoFill')?.addEventListener('click', () => {
-    document.getElementById('loginUsuario').value = 'profesor1';
-    document.getElementById('loginContrasena').value = '123456';
-    document.getElementById('loginError').textContent = '';
+    rellenarYEntrarCuentaDemo('profesor1', '123456');
+  });
+  document.getElementById('btnDemoFillProf2')?.addEventListener('click', () => {
+    rellenarYEntrarCuentaDemo('profesor2', '123456');
+  });
+  document.getElementById('btnDemoFillEst1')?.addEventListener('click', () => {
+    rellenarYEntrarCuentaDemo('estudiante1', '123456');
+  });
+
+  // Botones de cambio rápido en la barra superior para comparar Profesor 1 vs Profesor 2 vs Estudiante
+  document.getElementById('btnSwitchProf1')?.addEventListener('click', () => {
+    ejecutarLoginConCredenciales('profesor1', '123456');
+  });
+  document.getElementById('btnSwitchProf2')?.addEventListener('click', () => {
+    ejecutarLoginConCredenciales('profesor2', '123456');
+  });
+  document.getElementById('btnSwitchEst1')?.addEventListener('click', () => {
+    ejecutarLoginConCredenciales('estudiante1', '123456');
   });
 
   document.getElementById('btnLogout')?.addEventListener('click', () => {
@@ -635,36 +789,126 @@ function configurarEventos() {
 }
 
 // ==========================================================================
-// AUTENTICACIÓN
+// AUTENTICACIÓN (SOPORTE PROFESORES Y ESTUDIANTES)
 // ==========================================================================
 function ejecutarLogin() {
   const usuario = document.getElementById('loginUsuario').value.trim();
   const pass = document.getElementById('loginContrasena').value;
+  ejecutarLoginConCredenciales(usuario, pass);
+}
+
+function ejecutarLoginConCredenciales(usuario, pass) {
   const errorLbl = document.getElementById('loginError');
 
   if (!usuario || !pass) {
-    errorLbl.textContent = 'Por favor, ingresa tu usuario y contraseña.';
+    if (errorLbl) errorLbl.textContent = 'Por favor, ingresa tu usuario y contraseña.';
     return;
   }
 
-  const profesor = estadoLocal.profesores.find(p => p.usuario === usuario && p.contrasena === pass);
+  asegurarCuentasDemostracion();
 
+  // 1. Verificar si es Profesor (profesor1, profesor2, etc.)
+  const profesor = estadoLocal.profesores.find(p => p && p.usuario === usuario && p.contrasena === pass);
   if (profesor) {
-    usuarioActual = profesor;
-    localStorage.setItem(DB_KEYS.SESSION, JSON.stringify(profesor));
+    usuarioActual = { ...profesor, rol: 'PROFESOR' };
+    localStorage.setItem(DB_KEYS.SESSION, JSON.stringify(usuarioActual));
     mostrarDashboard();
-    showToast('Bienvenido, ' + profesor.nombre_completo);
+    showToast(`👨‍🏫 Vista Profesor: ${profesor.nombre_completo}`);
+    return;
+  }
+
+  // 2. Verificar si es Estudiante ('estudiante1' o documento de identidad de cualquier estudiante activo)
+  let estudiante = null;
+  if ((usuario.toLowerCase() === 'estudiante1' || usuario.toLowerCase() === 'estudiante') && pass === '123456') {
+    estudiante = estadoLocal.estudiantes.find(e => e && e.id_estudiante === 1 && e.activo === 1)
+              || estadoLocal.estudiantes.find(e => e && e.activo === 1);
   } else {
-    errorLbl.textContent = 'Usuario o contraseña incorrectos.';
+    estudiante = estadoLocal.estudiantes.find(e =>
+      e && e.activo === 1 && (e.documento === usuario || `estudiante${e.id_estudiante}` === usuario.toLowerCase()) && (pass === '123456' || pass === e.documento)
+    );
+  }
+
+  if (estudiante) {
+    const cursoEst = estadoLocal.cursos.find(c => c.id_curso === estudiante.id_curso);
+    const profEst = cursoEst ? estadoLocal.profesores.find(p => p.id_profesor === cursoEst.id_profesor) : null;
+    usuarioActual = {
+      rol: 'ESTUDIANTE',
+      id_estudiante: estudiante.id_estudiante,
+      nombre_completo: estudiante.nombre_completo,
+      documento: estudiante.documento,
+      id_curso: estudiante.id_curso,
+      usuario: usuario,
+      correo: `${estudiante.nombre_completo.toLowerCase().split(' ').slice(0, 2).join('.').normalize("NFD").replace(/[\u0300-\u036f]/g, "")}@estudiante.institucion.edu.co`,
+      telefono: `Documento: ${estudiante.documento}`,
+      departamento: cursoEst ? `Grado ${cursoEst.nombre_curso}` : 'Secundaria',
+      especialidad: cursoEst ? `Jornada ${cursoEst.jornada}` : 'Académica',
+      bio: `Estudiante activo matriculado en el curso ${cursoEst ? cursoEst.nombre_curso : 'N/A'}. Director de grupo: ${profEst ? profEst.nombre_completo : 'Asignado'}.`
+    };
+    localStorage.setItem(DB_KEYS.SESSION, JSON.stringify(usuarioActual));
+    mostrarDashboard();
+    showToast(`🎓 Vista Estudiante: ${estudiante.nombre_completo} (Solo Lectura)`);
+    return;
+  }
+
+  if (errorLbl) {
+    errorLbl.textContent = 'Usuario o contraseña incorrectos. Prueba profesor1, profesor2 o estudiante1 (clave: 123456).';
   }
 }
 
 // ==========================================================================
-// MÓDULO 0: INICIO (DASHBOARD)
+// MÓDULO 0: INICIO (DASHBOARD PROFESOR VS ESTUDIANTE)
 // ==========================================================================
 function cargarDashboardInicio() {
+  const inicioTitulo = document.getElementById('inicioTitulo');
+  const inicioSubtitulo = document.getElementById('inicioSubtitulo');
+  const label1 = document.getElementById('dashLabelCard1');
+  const label2 = document.getElementById('dashLabelCard2');
+  const label3 = document.getElementById('dashLabelCard3');
+  const val1 = document.getElementById('dashTotalEstudiantes');
+  const val2 = document.getElementById('dashTotalCursos');
+  const val3 = document.getElementById('dashAsistenciaHoy');
+  const bannerTitulo = document.getElementById('dashBannerTitulo');
+  const bannerTexto = document.getElementById('dashBannerTexto');
+
+  if (esRolEstudiante()) {
+    const curso = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
+    const prof = curso ? estadoLocal.profesores.find(p => p.id_profesor === curso.id_profesor) : null;
+    const misAsistencias = estadoLocal.asistencias.filter(a => a.id_estudiante === usuarioActual.id_estudiante);
+    const presentes = misAsistencias.filter(a => a.estado === 'PRESENTE').length;
+    const tasaPersonal = misAsistencias.length > 0 ? Math.round((presentes / misAsistencias.length) * 100) : 100;
+
+    const misNotas = estadoLocal.notas.filter(n => n.id_estudiante === usuarioActual.id_estudiante);
+    const notaActual = misNotas.length > 0 ? misNotas[misNotas.length - 1] : null;
+    const promTexto = notaActual && notaActual.promedio ? `${notaActual.promedio} (${obtenerDesempeno(notaActual.promedio).texto})` : 'Sin calificar';
+
+    if (inicioTitulo) inicioTitulo.textContent = `Portal Estudiantil — ${usuarioActual.nombre_completo}`;
+    if (inicioSubtitulo) inicioSubtitulo.textContent = `Vista de estudiante en tiempo real (Solo lectura). Director de grupo: ${prof ? prof.nombre_completo : 'N/A'}`;
+    if (label1) label1.textContent = 'Mi Curso Actual';
+    if (label2) label2.textContent = 'Mi Promedio Académico';
+    if (label3) label3.textContent = 'Mi Asistencia Personal';
+
+    if (val1) val1.textContent = curso ? `${curso.nombre_curso} (${curso.jornada})` : 'N/A';
+    if (val2) val2.textContent = promTexto;
+    if (val3) val3.textContent = `${tasaPersonal}% (${presentes}/${misAsistencias.length})`;
+
+    const ultimaAsist = misAsistencias.length > 0 ? misAsistencias[misAsistencias.length - 1] : null;
+    if (bannerTitulo) {
+      bannerTitulo.innerHTML = `<i class="fas fa-user-graduate"></i> Comparación: ¿Qué ve un Estudiante vs un Profesor?`;
+    }
+    if (bannerTexto) {
+      bannerTexto.innerHTML = `
+        <strong>🔒 Modo Solo Lectura Personal:</strong> Como estudiante, no puedes modificar la asistencia ni las notas de otros compañeros.<br>
+        • <strong>Última asistencia registrada por tu profesor:</strong> ${ultimaAsist ? `<span class="badge badge-${ultimaAsist.estado.toLowerCase()}">${ultimaAsist.estado}</span> el ${formatearFecha(ultimaAsist.fecha)} (${ultimaAsist.observacion || 'Sin observaciones'})` : 'Sin registros aún'}<br>
+        • <strong>Sincronización en vivo:</strong> Si el profesor <code>${prof ? prof.usuario : 'profesor1'}</code> cambia tu asistencia o tus calificaciones en otra pestaña o computadora, tus datos se actualizarán aquí al instante.
+      `;
+    }
+    return;
+  }
+
+  // VISTA PROFESOR
   const cursos = estadoLocal.cursos.filter(c => c.id_profesor === usuarioActual.id_profesor);
   const idsCursos = cursos.map(c => c.id_curso);
+  const nombresCursos = cursos.map(c => `${c.nombre_curso} (${c.jornada})`).join(', ') || 'Ninguno';
   
   const estudiantes = estadoLocal.estudiantes.filter(e => idsCursos.includes(e.id_curso) && e.activo === 1);
   const asistencias = estadoLocal.asistencias.filter(a => idsCursos.includes(a.id_curso));
@@ -672,21 +916,32 @@ function cargarDashboardInicio() {
   const hoyStr = new Date().toISOString().split('T')[0];
   const asistenciasHoy = asistencias.filter(a => a.fecha === hoyStr);
   
-  let porcentajeAsistenciaHoy = 0;
+  let porcentajeAsistenciaHoy = 100;
   if (asistenciasHoy.length > 0) {
     const presentes = asistenciasHoy.filter(a => a.estado === 'PRESENTE').length;
     porcentajeAsistenciaHoy = Math.round((presentes / asistenciasHoy.length) * 100);
   }
 
-  const dashTotalEstudiantes = document.getElementById('dashTotalEstudiantes');
-  const dashTotalCursos = document.getElementById('dashTotalCursos');
-  const dashAsistenciaHoy = document.getElementById('dashAsistenciaHoy');
-  const dashTotalAsistencias = document.getElementById('dashTotalAsistencias');
+  if (inicioTitulo) inicioTitulo.textContent = `Panel de Control Docente — ${usuarioActual.nombre_completo}`;
+  if (inicioSubtitulo) inicioSubtitulo.textContent = `Gestión académica de tus cursos asignados: ${nombresCursos}`;
+  if (label1) label1.textContent = 'Estudiantes en mis Cursos';
+  if (label2) label2.textContent = 'Cursos Asignados';
+  if (label3) label3.textContent = 'Tasa de Asistencia Hoy';
 
-  if (dashTotalEstudiantes) dashTotalEstudiantes.textContent = estudiantes.length;
-  if (dashTotalCursos) dashTotalCursos.textContent = cursos.length;
-  if (dashAsistenciaHoy) dashAsistenciaHoy.textContent = porcentajeAsistenciaHoy + '%';
-  if (dashTotalAsistencias) dashTotalAsistencias.textContent = asistencias.length;
+  if (val1) val1.textContent = estudiantes.length;
+  if (val2) val2.textContent = cursos.length;
+  if (val3) val3.textContent = porcentajeAsistenciaHoy + '%';
+
+  if (bannerTitulo) {
+    bannerTitulo.innerHTML = `<i class="fas fa-chalkboard-teacher"></i> Modo Profesor Activo (${usuarioActual.usuario}) — Edición en Tiempo Real`;
+  }
+  if (bannerTexto) {
+    bannerTexto.innerHTML = `
+      <strong>✏️ Control Total Docente:</strong> Tienes asignados los cursos <strong>${nombresCursos}</strong> con <strong>${estudiantes.length} estudiantes</strong> activos.<br>
+      • Desde el menú izquierdo puedes <strong>Tomar Asistencia</strong>, <strong>Matricular o Dar de Baja Estudiantes</strong> y <strong>Calificar Notas</strong>.<br>
+      • Puedes usar los botones superiores (<code>👨‍🏫 Prof. 1</code>, <code>👩‍🏫 Prof. 2</code>, <code>🎓 Estudiante</code>) para comparar al instante cómo ve la plataforma cada rol.
+    `;
+  }
 }
 
 // ==========================================================================
@@ -1009,6 +1264,28 @@ function cargarCursosReportes() {
   const valorActual = combo.value;
   combo.innerHTML = '';
 
+  const repTitulo = document.getElementById('reportesTitulo');
+  const repSub = document.getElementById('reportesSubtitulo');
+
+  if (esRolEstudiante()) {
+    if (repTitulo) repTitulo.textContent = 'Mi Historial de Asistencia';
+    if (repSub) repSub.textContent = 'Consulta tus asistencias, llegadas tarde y excusas registradas por tu profesor en tiempo real (Solo lectura)';
+    const miCurso = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
+    if (miCurso) {
+      const opt = document.createElement('option');
+      opt.value = miCurso.id_curso;
+      opt.textContent = `${miCurso.nombre_curso} (${miCurso.jornada})`;
+      combo.appendChild(opt);
+      combo.value = miCurso.id_curso;
+    }
+    combo.disabled = true;
+    return;
+  }
+
+  if (repTitulo) repTitulo.textContent = 'Reportes y Consultas de Asistencia';
+  if (repSub) repSub.textContent = 'Consulte el historial de asistencia filtrando por curso y rango de fechas';
+  combo.disabled = false;
+
   const cursos = estadoLocal.cursos.filter(c => c.id_profesor === usuarioActual.id_profesor);
   cursos.forEach(c => {
     const opt = document.createElement('option');
@@ -1041,9 +1318,14 @@ function consultarReportes() {
     return;
   }
 
-  const asistencias = estadoLocal.asistencias.filter(a =>
+  let asistencias = estadoLocal.asistencias.filter(a =>
     a.id_curso === idCurso && a.fecha >= desde && a.fecha <= hasta
   );
+
+  // Si es estudiante, mostrar únicamente sus propios registros de asistencia
+  if (esRolEstudiante()) {
+    asistencias = asistencias.filter(a => a.id_estudiante === usuarioActual.id_estudiante);
+  }
 
   const mapaEstudiantes = {};
   estadoLocal.estudiantes.forEach(e => mapaEstudiantes[e.id_estudiante] = e.nombre_completo);
@@ -1103,9 +1385,12 @@ function exportarReporteCSV() {
   const desde = document.getElementById('reporteFechaDesde').value;
   const hasta = document.getElementById('reporteFechaHasta').value;
 
-  const asistencias = estadoLocal.asistencias.filter(a =>
+  let asistencias = estadoLocal.asistencias.filter(a =>
     a.id_curso === idCurso && a.fecha >= desde && a.fecha <= hasta
   );
+  if (esRolEstudiante()) {
+    asistencias = asistencias.filter(a => a.id_estudiante === usuarioActual.id_estudiante);
+  }
 
   if (asistencias.length === 0) {
     showToast('No hay datos para exportar', 'error');
@@ -1142,13 +1427,40 @@ function exportarReporteCSV() {
 }
 
 // ==========================================================================
-// MÓDULO 4: GESTIÓN DE NOTAS (NUEVO)
+// MÓDULO 4: GESTIÓN DE NOTAS (PROFESOR EDITA / ESTUDIANTE SOLO LECTURA)
 // ==========================================================================
 function cargarCursosNotas() {
   const combo = document.getElementById('comboCursoNotas');
   if(!combo) return;
   const valorActual = combo.value;
   combo.innerHTML = '';
+
+  const notasTitulo = document.getElementById('notasTitulo');
+  const notasSub = document.getElementById('notasSubtitulo');
+  const btnGuardarNotas = document.getElementById('btnGuardarNotas');
+
+  if (esRolEstudiante()) {
+    if (notasTitulo) notasTitulo.textContent = 'Mis Calificaciones — Boletín Académico';
+    if (notasSub) notasSub.textContent = 'Vista de solo lectura sincronizada en tiempo real con las calificaciones registradas por tu profesor';
+    if (btnGuardarNotas) btnGuardarNotas.style.display = 'none';
+
+    const miCurso = estadoLocal.cursos.find(c => c.id_curso === usuarioActual.id_curso);
+    if (miCurso) {
+      const opt = document.createElement('option');
+      opt.value = miCurso.id_curso;
+      opt.textContent = `${miCurso.nombre_curso} (${miCurso.jornada})`;
+      combo.appendChild(opt);
+      combo.value = miCurso.id_curso;
+    }
+    combo.disabled = true;
+    cargarTablaNotas();
+    return;
+  }
+
+  if (notasTitulo) notasTitulo.textContent = 'Gestión de Calificaciones';
+  if (notasSub) notasSub.textContent = 'Sistema integral de evaluación inspirado en SISMAC (Modo Docente Editable)';
+  if (btnGuardarNotas) btnGuardarNotas.style.display = 'inline-block';
+  combo.disabled = false;
 
   const cursos = estadoLocal.cursos.filter(c => c.id_profesor === usuarioActual.id_profesor);
   if (cursos.length === 0) {
@@ -1181,7 +1493,7 @@ function calcularPromedio(n1, n2, n3, n4) {
 
 function obtenerDesempeno(promedio) {
   const prom = parseFloat(promedio);
-  if (isNaN(prom)) return { texto: '-', clase: '' };
+  if (isNaN(prom) || prom <= 0) return { texto: '-', clase: '' };
   if (prom >= 4.6) return { texto: 'SUPERIOR', clase: 'badge-presente' }; // Verde
   if (prom >= 4.0) return { texto: 'ALTO', clase: 'badge-excusa' }; // Azul
   if (prom >= 3.0) return { texto: 'BÁSICO', clase: 'badge-tarde' }; // Amarillo/Naranja
@@ -1207,7 +1519,10 @@ function cargarTablaNotas() {
 
   if (!idCurso) return;
 
-  const estudiantes = estadoLocal.estudiantes.filter(e => e.id_curso === idCurso && e.activo === 1);
+  let estudiantes = estadoLocal.estudiantes.filter(e => e.id_curso === idCurso && e.activo === 1);
+  if (esRolEstudiante()) {
+    estudiantes = estudiantes.filter(e => e.id_estudiante === usuarioActual.id_estudiante);
+  }
   const notasCurso = estadoLocal.notas.filter(n => n.id_curso === idCurso && n.periodo === periodo && n.year === year);
 
   if (estudiantes.length === 0) {
@@ -1218,45 +1533,61 @@ function cargarTablaNotas() {
 
   estudiantes.forEach(est => {
     const prevNota = notasCurso.find(n => n.id_estudiante === est.id_estudiante) || {};
-    const n1 = prevNota.nota1 || '';
-    const n2 = prevNota.nota2 || '';
-    const n3 = prevNota.nota3 || '';
-    const n4 = prevNota.nota4 || '';
+    const n1 = prevNota.nota1 !== undefined && prevNota.nota1 !== null ? prevNota.nota1 : '';
+    const n2 = prevNota.nota2 !== undefined && prevNota.nota2 !== null ? prevNota.nota2 : '';
+    const n3 = prevNota.nota3 !== undefined && prevNota.nota3 !== null ? prevNota.nota3 : '';
+    const n4 = prevNota.nota4 !== undefined && prevNota.nota4 !== null ? prevNota.nota4 : '';
     const prom = prevNota.promedio || '0.00';
     const desem = obtenerDesempeno(prom);
 
     const tr = document.createElement('tr');
     tr.dataset.idEstudiante = est.id_estudiante;
 
-    tr.innerHTML = `
-      <td style="font-weight: 600;">${est.nombre_completo}</td>
-      <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n1" value="${n1}" style="width: 70px;"></td>
-      <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n2" value="${n2}" style="width: 70px;"></td>
-      <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n3" value="${n3}" style="width: 70px;"></td>
-      <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n4" value="${n4}" style="width: 70px;"></td>
-      <td class="promedio-td" style="font-weight:bold;">${prom}</td>
-      <td class="desempeno-td"><span class="badge ${desem.clase}">${desem.texto}</span></td>
-    `;
+    if (esRolEstudiante()) {
+      // Vista de Solo Lectura para el Estudiante
+      tr.innerHTML = `
+        <td style="font-weight: 700; text-align: left; padding: 1rem;">🎓 ${est.nombre_completo} <span style="font-size: 0.75rem; color: #7e22ce; font-weight: 600;">(Tú)</span></td>
+        <td style="font-weight: 600; font-size: 1rem;">${n1 !== '' ? Number(n1).toFixed(1) : '-'}</td>
+        <td style="font-weight: 600; font-size: 1rem;">${n2 !== '' ? Number(n2).toFixed(1) : '-'}</td>
+        <td style="font-weight: 600; font-size: 1rem;">${n3 !== '' ? Number(n3).toFixed(1) : '-'}</td>
+        <td style="font-weight: 600; font-size: 1rem;">${n4 !== '' ? Number(n4).toFixed(1) : '-'}</td>
+        <td class="promedio-td" style="font-weight: bold; font-size: 1.05rem; color: #1e293b;">${prom}</td>
+        <td class="desempeno-td"><span class="badge ${desem.clase}">${desem.texto}</span></td>
+      `;
+    } else {
+      // Vista Editable para el Profesor
+      tr.innerHTML = `
+        <td style="font-weight: 600; text-align: left; padding: 0.75rem 1rem;">${est.nombre_completo}</td>
+        <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n1" value="${n1}" style="width: 70px;"></td>
+        <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n2" value="${n2}" style="width: 70px;"></td>
+        <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n3" value="${n3}" style="width: 70px;"></td>
+        <td><input type="number" step="0.1" min="1.0" max="5.0" class="form-input input-nota n4" value="${n4}" style="width: 70px;"></td>
+        <td class="promedio-td" style="font-weight:bold;">${prom}</td>
+        <td class="desempeno-td"><span class="badge ${desem.clase}">${desem.texto}</span></td>
+      `;
+    }
     
     tbody.appendChild(tr);
   });
 
-  tbody.querySelectorAll('.input-nota').forEach(input => {
-    input.addEventListener('input', (e) => {
-      const tr = e.target.closest('tr');
-      const n1 = tr.querySelector('.n1').value;
-      const n2 = tr.querySelector('.n2').value;
-      const n3 = tr.querySelector('.n3').value;
-      const n4 = tr.querySelector('.n4').value;
-      const promedio = calcularPromedio(n1, n2, n3, n4);
-      tr.querySelector('.promedio-td').textContent = promedio;
-      
-      const desem = obtenerDesempeno(promedio);
-      tr.querySelector('.desempeno-td').innerHTML = `<span class="badge ${desem.clase}">${desem.texto}</span>`;
-      
-      recalcularMetricasNotas();
+  if (!esRolEstudiante()) {
+    tbody.querySelectorAll('.input-nota').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const tr = e.target.closest('tr');
+        const n1 = tr.querySelector('.n1').value;
+        const n2 = tr.querySelector('.n2').value;
+        const n3 = tr.querySelector('.n3').value;
+        const n4 = tr.querySelector('.n4').value;
+        const promedio = calcularPromedio(n1, n2, n3, n4);
+        tr.querySelector('.promedio-td').textContent = promedio;
+        
+        const desem = obtenerDesempeno(promedio);
+        tr.querySelector('.desempeno-td').innerHTML = `<span class="badge ${desem.clase}">${desem.texto}</span>`;
+        
+        recalcularMetricasNotas();
+      });
     });
-  });
+  }
 
   recalcularMetricasNotas();
 }
@@ -1303,6 +1634,10 @@ function actualizarMetricasNotasDOM(prom, sup, alto, basico, bajo) {
 }
 
 function guardarNotasModulo() {
+  if (esRolEstudiante()) {
+    showToast('Los estudiantes tienen acceso de solo lectura a las notas', 'error');
+    return;
+  }
   const combo = document.getElementById('comboCursoNotas');
   const comboPeriodo = document.getElementById('comboPeriodoNotas');
   if(!combo || !comboPeriodo) return;
@@ -1318,7 +1653,6 @@ function guardarNotasModulo() {
   }
 
   let notasData = [...estadoLocal.notas];
-  // Filter out current course, period, year to overwrite
   notasData = notasData.filter(n => !(n.id_curso === idCurso && n.periodo === periodo && n.year === year));
 
   let nextId = notasData.length > 0 ? Math.max(...notasData.map(n => n.id_nota || 0)) + 1 : 1;
@@ -1348,7 +1682,7 @@ function guardarNotasModulo() {
   });
 
   guardarNotas(notasData);
-  showToast('¡Notas guardadas correctamente!');
+  showToast('¡Notas guardadas y sincronizadas en la nube en tiempo real!');
 }
 
 function exportarNotasCSV() {
@@ -1356,7 +1690,10 @@ function exportarNotasCSV() {
   const periodo = parseInt(document.getElementById('comboPeriodoNotas').value);
   const year = obtenerAnioNotasSeleccionado();
 
-  const notasCurso = estadoLocal.notas.filter(n => n.id_curso === idCurso && n.periodo === periodo && n.year === year);
+  let notasCurso = estadoLocal.notas.filter(n => n.id_curso === idCurso && n.periodo === periodo && n.year === year);
+  if (esRolEstudiante()) {
+    notasCurso = notasCurso.filter(n => n.id_estudiante === usuarioActual.id_estudiante);
+  }
 
   if (notasCurso.length === 0) {
     showToast('No hay notas para exportar', 'error');
@@ -1396,21 +1733,56 @@ function exportarNotasCSV() {
 }
 
 // ==========================================================================
-// MÓDULO 5: PERFIL DEL PROFESOR
+// MÓDULO 5: PERFIL (PROFESOR VS ESTUDIANTE)
 // ==========================================================================
 function cargarPerfil() {
   if(!usuarioActual) return;
   const p = usuarioActual;
   
+  const pTitulo = document.getElementById('perfilTitulo');
+  const pSub = document.getElementById('perfilSubtitulo');
+  const pRolTexto = document.getElementById('perfilRolTexto');
+  const pSecInfo = document.getElementById('perfilSeccionInfoTitulo');
+  const pLblDepto = document.getElementById('perfilLabelDepto');
+  const pLblEsp = document.getElementById('perfilLabelEsp');
+  const pSecBio = document.getElementById('perfilSeccionBioTitulo');
+
   const pNombre = document.getElementById('perfilNombre');
   const pAvatar = document.getElementById('perfilAvatarTexto');
   const pEmail = document.getElementById('perfilEmail');
   const pTel = document.getElementById('perfilTelefono');
   const pDepto = document.getElementById('perfilDepartamento');
   const pEsp = document.getElementById('perfilEspecialidad');
-  const pTitulo = document.getElementById('perfilTitulo');
-  const pHorario = document.getElementById('perfilHorario');
   const pBio = document.getElementById('perfilBio');
+
+  if (esRolEstudiante()) {
+    const curso = estadoLocal.cursos.find(c => c.id_curso === p.id_curso);
+    const prof = curso ? estadoLocal.profesores.find(pr => pr.id_profesor === curso.id_profesor) : null;
+    if (pTitulo) pTitulo.textContent = 'Mi Ficha Estudiantil';
+    if (pSub) pSub.textContent = 'Información de matrícula académica y curso asignado';
+    if (pRolTexto) pRolTexto.textContent = `🎓 Estudiante Activo — Curso ${curso ? curso.nombre_curso : 'N/A'}`;
+    if (pSecInfo) pSecInfo.textContent = 'Datos de Matrícula';
+    if (pLblDepto) pLblDepto.textContent = 'Curso y Grado';
+    if (pLblEsp) pLblEsp.textContent = 'Jornada y Director de Grupo';
+    if (pSecBio) pSecBio.textContent = 'Estado Académico';
+
+    if (pNombre) pNombre.textContent = p.nombre_completo || 'Estudiante';
+    if (pAvatar) pAvatar.textContent = (p.nombre_completo || 'E').charAt(0).toUpperCase();
+    if (pEmail) pEmail.textContent = p.correo || 'estudiante@institucion.edu.co';
+    if (pTel) pTel.textContent = `Documento: ${p.documento || 'N/A'}`;
+    if (pDepto) pDepto.textContent = curso ? `Grado ${curso.nombre_curso}` : 'No asignado';
+    if (pEsp) pEsp.textContent = `${curso ? curso.jornada : ''} — Prof. ${prof ? prof.nombre_completo : 'Asignado'}`;
+    if (pBio) pBio.textContent = `Estudiante matriculado activamente en el curso ${curso ? curso.nombre_curso : ''}. Cuenta con acceso en tiempo real a su registro de asistencia y boletín de calificaciones.`;
+    return;
+  }
+
+  if (pTitulo) pTitulo.textContent = 'Mi Perfil Docente';
+  if (pSub) pSub.textContent = 'Información profesional y cursos a cargo';
+  if (pRolTexto) pRolTexto.textContent = `👨‍🏫 Docente Titular (${p.usuario || ''})`;
+  if (pSecInfo) pSecInfo.textContent = 'Información Profesional';
+  if (pLblDepto) pLblDepto.textContent = 'Departamento';
+  if (pLblEsp) pLblEsp.textContent = 'Especialidad';
+  if (pSecBio) pSecBio.textContent = 'Educación y Biografía';
 
   if(pNombre) pNombre.textContent = p.nombre_completo || 'No especificado';
   if(pAvatar) pAvatar.textContent = (p.nombre_completo || 'P').charAt(0).toUpperCase();
@@ -1418,8 +1790,6 @@ function cargarPerfil() {
   if(pTel) pTel.textContent = p.telefono || 'No especificado';
   if(pDepto) pDepto.textContent = p.departamento || 'No especificado';
   if(pEsp) pEsp.textContent = p.especialidad || 'No especificado';
-  if(pTitulo) pTitulo.textContent = p.titulo || 'No especificado';
-  if(pHorario) pHorario.textContent = p.horario || 'No especificado';
   if(pBio) pBio.textContent = p.bio || 'No especificado';
 }
 

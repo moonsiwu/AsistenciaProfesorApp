@@ -59,10 +59,15 @@ public class DashboardFrame extends JFrame {
 
         raiz.add(panelContenido, BorderLayout.CENTER);
         setContentPane(raiz);
-        mostrarTarjeta(TARJETA_ASISTENCIA);
+        if ("ESTUDIANTE".equalsIgnoreCase(profesor.getUsuario())) {
+            mostrarTarjeta(TARJETA_REPORTES);
+        } else {
+            mostrarTarjeta(TARJETA_ASISTENCIA);
+        }
     }
 
     private JPanel construirBarraLateral() {
+        boolean esEstudiante = "ESTUDIANTE".equalsIgnoreCase(profesor.getUsuario());
         JPanel barra = new JPanel();
         barra.setBackground(Tema.AZUL_SIDEBAR);
         barra.setPreferredSize(new Dimension(240, 0));
@@ -103,7 +108,7 @@ public class DashboardFrame extends JFrame {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Tema.AZUL_PRINCIPAL);
+                g2.setColor(esEstudiante ? new Color(0x7E, 0x22, 0xCE) : Tema.AZUL_PRINCIPAL);
                 g2.fillOval(0, 0, getWidth(), getHeight());
                 g2.dispose();
                 super.paintComponent(g);
@@ -118,7 +123,7 @@ public class DashboardFrame extends JFrame {
         JLabel lblNombre = new JLabel(profesor.getNombreCompleto());
         lblNombre.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblNombre.setForeground(Color.WHITE);
-        JLabel lblRol = new JLabel("Docente Titular");
+        JLabel lblRol = new JLabel(esEstudiante ? "Estudiante (Solo Lectura)" : "Docente Titular (" + profesor.getUsuario() + ")");
         lblRol.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lblRol.setForeground(new Color(0x94, 0xA3, 0xB8)); // Slate 400
         panelInfo.add(lblNombre);
@@ -130,7 +135,7 @@ public class DashboardFrame extends JFrame {
         barra.add(Box.createVerticalStrut(24));
 
         // --- Título de Sección Centrado ---
-        JLabel lblMenu = new JLabel("GESTIÓN Y CONTROL", SwingConstants.CENTER);
+        JLabel lblMenu = new JLabel(esEstudiante ? "PORTAL ESTUDIANTE" : "GESTIÓN Y CONTROL", SwingConstants.CENTER);
         lblMenu.setFont(new Font("Segoe UI", Font.BOLD, 10));
         lblMenu.setForeground(new Color(0x94, 0xA3, 0xB8));
         lblMenu.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -138,11 +143,15 @@ public class DashboardFrame extends JFrame {
         barra.add(Box.createVerticalStrut(8));
 
         // --- Botones de Navegación Centrados ---
-        barra.add(crearBotonMenu("Tomar Asistencia", TARJETA_ASISTENCIA));
-        barra.add(Box.createVerticalStrut(6));
-        barra.add(crearBotonMenu("Gestión de Estudiantes", TARJETA_ESTUDIANTES));
-        barra.add(Box.createVerticalStrut(6));
-        barra.add(crearBotonMenu("Reportes y Consultas", TARJETA_REPORTES));
+        if (!esEstudiante) {
+            barra.add(crearBotonMenu("Tomar Asistencia", TARJETA_ASISTENCIA));
+            barra.add(Box.createVerticalStrut(6));
+            barra.add(crearBotonMenu("Gestión de Estudiantes", TARJETA_ESTUDIANTES));
+            barra.add(Box.createVerticalStrut(6));
+            barra.add(crearBotonMenu("Reportes y Consultas", TARJETA_REPORTES));
+        } else {
+            barra.add(crearBotonMenu("Mi Asistencia (Lectura)", TARJETA_REPORTES));
+        }
 
         barra.add(Box.createVerticalGlue());
 

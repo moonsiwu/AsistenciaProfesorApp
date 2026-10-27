@@ -39,11 +39,26 @@ function obtenerDatosIniciales() {
         titulo: "Licenciatura en Matemáticas",
         bio: "Docente con más de 10 años de experiencia en educación secundaria...",
         horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
+      },
+      {
+        id_profesor: 2,
+        nombre_completo: "María Fernanda Gómez",
+        usuario: "profesor2",
+        contrasena: "123456",
+        correo: "maria.gomez@institucion.edu.co",
+        telefono: "+57 310 987 6543",
+        departamento: "Humanidades e Idiomas",
+        especialidad: "Lengua Castellana e Inglés",
+        titulo: "Magíster en Lingüística y Educación",
+        bio: "Docente titular del área de Humanidades y directora de grupo de los grados 9-A y 10-B.",
+        horario: "Lunes a Viernes, 7:00 AM - 3:00 PM"
       }
     ],
     cursos: [
       { id_curso: 1, nombre_curso: "10-A", jornada: "Mañana", id_profesor: 1 },
-      { id_curso: 2, nombre_curso: "11-B", jornada: "Tarde", id_profesor: 1 }
+      { id_curso: 2, nombre_curso: "11-B", jornada: "Tarde", id_profesor: 1 },
+      { id_curso: 3, nombre_curso: "9-A", jornada: "Mañana", id_profesor: 2 },
+      { id_curso: 4, nombre_curso: "10-B", jornada: "Tarde", id_profesor: 2 }
     ],
     estudiantes: [
       { id_estudiante: 1, nombre_completo: "Ana María Gómez", documento: "1001234567", id_curso: 1, activo: 1 },
