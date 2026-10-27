@@ -1,9 +1,13 @@
 @echo off
 chcp 65001 > nul
 echo ========================================================
-echo   Iniciando Sistema de Control de Asistencia
+echo   Iniciando Sistema de Control de Asistencia + Nube
 echo ========================================================
 echo.
+
+cd /d "%~dp0"
+echo Iniciando Servidor Nube Sincronizado (Web + Java en http://localhost:8080)...
+start "" /B node servidor-nube.js > nul 2>&1
 
 cd /d "%~dp0AsistenciaProfesorApp"
 

@@ -1,6 +1,7 @@
 package com.institucion.asistencia.ui;
 
 import com.institucion.asistencia.model.Profesor;
+import com.institucion.asistencia.util.ServicioNube;
 import com.institucion.asistencia.util.Tema;
 
 import javax.swing.*;
@@ -26,6 +27,11 @@ public class DashboardFrame extends JFrame {
     private final List<JButton> botonesMenu = new ArrayList<>();
     private String tarjetaActiva = TARJETA_ASISTENCIA;
 
+    private PanelTomarAsistencia panelTomarAsistencia;
+    private PanelEstudiantes panelEstudiantes;
+    private PanelReportes panelReportes;
+    private JButton botonEstadoNube;
+
     public DashboardFrame(Profesor profesor) {
         super("Sistema Institucional de Asistencia — " + profesor.getNombreCompleto());
         this.profesor = profesor;
@@ -42,10 +48,14 @@ public class DashboardFrame extends JFrame {
 
         raiz.add(construirBarraLateral(), BorderLayout.WEST);
 
+        panelTomarAsistencia = new PanelTomarAsistencia(profesor);
+        panelEstudiantes = new PanelEstudiantes(profesor);
+        panelReportes = new PanelReportes(profesor);
+
         panelContenido.setBackground(Tema.FONDO);
-        panelContenido.add(new PanelTomarAsistencia(profesor), TARJETA_ASISTENCIA);
-        panelContenido.add(new PanelEstudiantes(profesor), TARJETA_ESTUDIANTES);
-        panelContenido.add(new PanelReportes(profesor), TARJETA_REPORTES);
+        panelContenido.add(panelTomarAsistencia, TARJETA_ASISTENCIA);
+        panelContenido.add(panelEstudiantes, TARJETA_ESTUDIANTES);
+        panelContenido.add(panelReportes, TARJETA_REPORTES);
 
         raiz.add(panelContenido, BorderLayout.CENTER);
         setContentPane(raiz);
@@ -136,10 +146,136 @@ public class DashboardFrame extends JFrame {
 
         barra.add(Box.createVerticalGlue());
 
+        // --- Botón de Sincronización en la Nube ---
+        botonEstadoNube = crearBotonEstadoNube();
+        barra.add(botonEstadoNube);
+        barra.add(Box.createVerticalStrut(8));
+
         // --- Cerrar Sesión ---
         barra.add(crearBotonCerrarSesion());
 
         return barra;
+    }
+
+    private JButton crearBotonEstadoNube() {
+        boolean conectado = ServicioNube.verificarConexion();
+        String textoInicial = conectado ? "🟢 Nube Sincronizada" : "☁️ Configurar Nube";
+
+        JButton boton = new JButton(textoInicial) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                if (getModel().isRollover()) {
+                    g2.setColor(new Color(0x0F, 0x76, 0x6E)); // Teal 700
+                } else {
+                    g2.setColor(new Color(0x1E, 0x3A, 0x8A)); // Blue 900
+                }
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 8, 8));
+                g2.setColor(new Color(255, 255, 255, 50));
+                g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, 8, 8));
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        boton.setForeground(Color.WHITE);
+        boton.setContentAreaFilled(false);
+        boton.setBorderPainted(false);
+        boton.setFocusPainted(false);
+        boton.setHorizontalAlignment(SwingConstants.CENTER);
+        boton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        boton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        boton.addActionListener(e -> abrirDialogoConfigurarNube());
+        return boton;
+    }
+
+    private void abrirDialogoConfigurarNube() {
+        boolean conectado = ServicioNube.verificarConexion();
+        String urlActual = ServicioNube.obtenerUrlActual();
+        boolean esFirebase = ServicioNube.esFirebaseExterno();
+
+        JPanel panel = new JPanel(new BorderLayout(10, 12));
+        panel.setPreferredSize(new Dimension(480, 260));
+        panel.setBorder(new EmptyBorder(8, 8, 8, 8));
+
+        String estadoHtml = conectado
+                ? "<span style='color:#166534;'><b>● CONECTADO EN TIEMPO REAL</b></span> (" + (esFirebase ? "Google Firebase" : "Nube Sincronizada Web + Java") + ")"
+                : "<span style='color:#991b1b;'><b>● MODO RESPALDO LOCAL</b></span>";
+
+        JLabel info = new JLabel("<html><div style='line-height:1.45;'>"
+                + "Estado actual: " + estadoHtml + "<br><br>"
+                + "<b>URL de Base de Datos en la Nube:</b><br>"
+                + "<small style='color:#475569;'>Puedes usar el servidor nube integrado (<code>http://localhost:8080</code>) que sincroniza al instante con la página Web, o pegar una URL de <b>Google Firebase Realtime Database</b> (<code>https://tu-proyecto-default-rtdb.firebaseio.com</code>).</small>"
+                + "</div></html>");
+        info.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+        JTextField campoUrl = new JTextField(urlActual);
+        Tema.estilizarCampoTexto(campoUrl);
+
+        JPanel centro = new JPanel(new GridLayout(2, 1, 6, 6));
+        centro.setOpaque(false);
+        JButton btnUsarIntegrada = Tema.crearBotonSecundario("Usar Nube Integrada (http://localhost:8080)");
+        btnUsarIntegrada.addActionListener(ev -> campoUrl.setText("http://localhost:8080"));
+        centro.add(campoUrl);
+        centro.add(btnUsarIntegrada);
+
+        panel.add(info, BorderLayout.NORTH);
+        panel.add(centro, BorderLayout.CENTER);
+
+        Object[] opciones = {"Guardar y Sincronizar", "Refrescar Datos Ahora", "Cancelar"};
+        int sel = JOptionPane.showOptionDialog(
+                this,
+                panel,
+                "☁️ Configuración de Sincronización en la Nube",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opciones,
+                opciones[0]
+        );
+
+        if (sel == 0) {
+            String nuevaUrl = campoUrl.getText().trim();
+            if (!nuevaUrl.isEmpty()) {
+                boolean ok = ServicioNube.configurarNuevaUrlNube(nuevaUrl);
+                actualizarBotonNube();
+                recargarPanelActivo();
+                if (ok) {
+                    JOptionPane.showMessageDialog(this,
+                            "¡Conectado y sincronizado exitosamente con la nube!\nURL: " + ServicioNube.obtenerUrlActual(),
+                            "Nube Sincronizada", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Se guardó la URL, pero no se pudo conectar en este momento.\nSe usará el respaldo automático hasta que responda.",
+                            "Aviso de Conexión", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        } else if (sel == 1) {
+            actualizarBotonNube();
+            recargarPanelActivo();
+            JOptionPane.showMessageDialog(this, "Datos actualizados desde la nube.",
+                    "Sincronización", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void actualizarBotonNube() {
+        if (botonEstadoNube != null) {
+            boolean ok = ServicioNube.verificarConexion();
+            botonEstadoNube.setText(ok ? "🟢 Nube Sincronizada" : "☁️ Configurar Nube");
+            botonEstadoNube.repaint();
+        }
+    }
+
+    private void recargarPanelActivo() {
+        if (TARJETA_ASISTENCIA.equals(tarjetaActiva) && panelTomarAsistencia != null) {
+            panelTomarAsistencia.recargarDesdeNube();
+        } else if (TARJETA_ESTUDIANTES.equals(tarjetaActiva) && panelEstudiantes != null) {
+            panelEstudiantes.recargarDesdeNube();
+        } else if (TARJETA_REPORTES.equals(tarjetaActiva) && panelReportes != null) {
+            panelReportes.recargarDesdeNube();
+        }
     }
 
     private JButton crearBotonMenu(String texto, String tarjeta) {
@@ -182,6 +318,8 @@ public class DashboardFrame extends JFrame {
     private void mostrarTarjeta(String tarjeta) {
         this.tarjetaActiva = tarjeta;
         cardLayout.show(panelContenido, tarjeta);
+        recargarPanelActivo();
+        actualizarBotonNube();
         for (JButton btn : botonesMenu) {
             btn.repaint();
         }

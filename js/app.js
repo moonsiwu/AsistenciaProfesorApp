@@ -103,94 +103,185 @@ function inicializarDatosPorDefecto() {
 }
 
 // ==========================================================================
-// CONEXIÓN Y SINCRONIZACIÓN EN LA NUBE (FIREBASE)
+// CONEXIÓN Y SINCRONIZACIÓN EN LA NUBE (FIREBASE + SERVIDOR NUBE WEB/JAVA)
 // ==========================================================================
+const CLOUD_SYNC_BASE = (window.location.protocol.startsWith('http') && window.location.port === '8080')
+  ? window.location.origin
+  : 'http://localhost:8080';
+
+let servidorLocalConectado = false;
+let sseConnection = null;
+
+function aplicarDatosRecibidosDeNube(data) {
+  if (!data || typeof data !== 'object') return;
+  if (data.profesores) estadoLocal.profesores = Object.values(data.profesores).filter(Boolean);
+  if (data.cursos) estadoLocal.cursos = Object.values(data.cursos).filter(Boolean);
+  if (data.estudiantes) estadoLocal.estudiantes = Object.values(data.estudiantes).filter(Boolean);
+  if (data.asistencias) estadoLocal.asistencias = Object.values(data.asistencias).filter(Boolean);
+  if (data.notas) estadoLocal.notas = Object.values(data.notas).filter(Boolean);
+
+  localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(estadoLocal.profesores));
+  localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(estadoLocal.cursos));
+  localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estadoLocal.estudiantes));
+  localStorage.setItem(DB_KEYS.ASISTENCIAS, JSON.stringify(estadoLocal.asistencias));
+  localStorage.setItem(DB_KEYS.NOTAS, JSON.stringify(estadoLocal.notas));
+
+  if (usuarioActual) {
+    actualizarModuloActivo();
+  }
+}
+
 async function inicializarConexionNube() {
-  const urlGuardada = localStorage.getItem(DB_KEYS.FIREBASE_URL) || FIREBASE_DB_URL_POR_DEFECTO;
+  // 1. Intentar sincronizar con el Servidor Nube Integrado (Web + Java en tiempo real)
+  try {
+    const statusRes = await fetch(`${CLOUD_SYNC_BASE}/api/status`);
+    if (statusRes.ok) {
+      const statusInfo = await statusRes.json();
+      servidorLocalConectado = true;
+      modoNubeActivo = true;
 
-  if (urlGuardada && window.firebase) {
+      if (statusInfo.firebaseUrl && !localStorage.getItem(DB_KEYS.FIREBASE_URL)) {
+        localStorage.setItem(DB_KEYS.FIREBASE_URL, statusInfo.firebaseUrl);
+      }
+
+      const dbRes = await fetch(`${CLOUD_SYNC_BASE}/asistencia_db.json`);
+      if (dbRes.ok) {
+        const initialData = await dbRes.json();
+        aplicarDatosRecibidosDeNube(initialData);
+      }
+
+      // Conectar Server-Sent Events (SSE) para actualizaciones en vivo al instante desde Java u otros navegadores
+      if (window.EventSource && !sseConnection) {
+        sseConnection = new EventSource(`${CLOUD_SYNC_BASE}/api/events`);
+        sseConnection.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            if (payload && payload.data) {
+              aplicarDatosRecibidosDeNube(payload.data);
+            }
+          } catch (err) {
+            console.warn('[Nube SSE] Error procesando actualización:', err);
+          }
+        };
+      }
+      actualizarIndicadorNube(true, statusInfo);
+    }
+  } catch (err) {
+    servidorLocalConectado = false;
+  }
+
+  // 2. Si hay una URL externa de Google Firebase Realtime Database configurada, conectarla también
+  const urlGuardada = (localStorage.getItem(DB_KEYS.FIREBASE_URL) || FIREBASE_DB_URL_POR_DEFECTO).trim();
+  const esUrlFirebase = urlGuardada && (urlGuardada.includes('firebaseio.com') || urlGuardada.includes('firebasedatabase.app'));
+
+  if (esUrlFirebase && window.firebase) {
     try {
-      const cleanUrl = urlGuardada.trim();
-      const config = { databaseURL: cleanUrl };
-
+      const config = { databaseURL: urlGuardada };
       if (!firebase.apps.length) {
         firebase.initializeApp(config);
       }
       dbFirebase = firebase.database();
       modoNubeActivo = true;
+      actualizarIndicadorNube(true, { firebaseUrl: urlGuardada });
 
-      actualizarIndicadorNube(true);
-
-      // Escuchar cambios en tiempo real desde la nube
       dbFirebase.ref('asistencia_db').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          if (data.profesores) estadoLocal.profesores = Object.values(data.profesores);
-          if (data.cursos) estadoLocal.cursos = Object.values(data.cursos);
-          if (data.estudiantes) estadoLocal.estudiantes = Object.values(data.estudiantes);
-          if (data.asistencias) estadoLocal.asistencias = Object.values(data.asistencias);
-          if (data.notas) estadoLocal.notas = Object.values(data.notas);
-
-          // Guardar copia de respaldo en LocalStorage
-          localStorage.setItem(DB_KEYS.PROFESORES, JSON.stringify(estadoLocal.profesores));
-          localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(estadoLocal.cursos));
-          localStorage.setItem(DB_KEYS.ESTUDIANTES, JSON.stringify(estadoLocal.estudiantes));
-          localStorage.setItem(DB_KEYS.ASISTENCIAS, JSON.stringify(estadoLocal.asistencias));
-          localStorage.setItem(DB_KEYS.NOTAS, JSON.stringify(estadoLocal.notas));
-
-          // Actualizar vista activa en tiempo real
-          actualizarModuloActivo();
+          aplicarDatosRecibidosDeNube(data);
         } else {
-          // Si la base de datos en la nube está vacía, sincronizar los datos locales iniciales
           sincronizarTodoANube();
         }
       });
-
-      console.log("[Nube] Sincronización en tiempo real activa con Firebase.");
+      console.log("[Nube] Sincronización en tiempo real activa con Google Firebase.");
     } catch (e) {
-      console.warn("[Nube] No se pudo conectar a Firebase:", e);
-      modoNubeActivo = false;
-      actualizarIndicadorNube(false);
+      console.warn("[Nube] No se pudo conectar a Firebase externo:", e);
+      if (!servidorLocalConectado) {
+        modoNubeActivo = false;
+        actualizarIndicadorNube(false);
+      }
     }
-  } else {
+  } else if (!servidorLocalConectado) {
     modoNubeActivo = false;
     actualizarIndicadorNube(false);
   }
 }
 
-function actualizarIndicadorNube(conectado) {
+function actualizarIndicadorNube(conectado, info = {}) {
   const icon = document.getElementById('cloudStatusIcon');
   const text = document.getElementById('cloudStatusText');
-  if (!icon || !text) return;
+  const btn = document.getElementById('btnAbrirConfigNube');
 
-  if (conectado) {
-    icon.textContent = '🟢';
-    text.textContent = 'Nube Sincronizada';
-  } else {
-    icon.textContent = '☁️';
-    text.textContent = 'Configurar Nube';
+  if (icon) icon.textContent = conectado ? '🟢' : '☁️';
+  if (text) text.textContent = conectado ? 'Nube Sincronizada' : 'Configurar Nube';
+  if (btn) {
+    btn.style.background = conectado ? 'rgba(16, 185, 129, 0.18)' : 'rgba(255, 255, 255, 0.1)';
+    btn.style.borderColor = conectado ? 'rgba(16, 185, 129, 0.45)' : 'rgba(255, 255, 255, 0.2)';
   }
+
+  const box = document.getElementById('cloudModalStatusBox');
+  const title = document.getElementById('cloudModalStatusTitle');
+  const detail = document.getElementById('cloudModalStatusDetail');
+  if (box && title && detail) {
+    if (conectado) {
+      box.style.background = '#ecfdf5';
+      box.style.borderColor = '#a7f3d0';
+      box.style.color = '#065f46';
+      const fbUrl = info.firebaseUrl || localStorage.getItem(DB_KEYS.FIREBASE_URL) || '';
+      if (fbUrl && fbUrl.includes('firebase')) {
+        title.textContent = '🟢 Conectado a Google Firebase + App Java';
+        detail.innerHTML = `Sincronizando en tiempo real con <code>${fbUrl}</code>`;
+      } else {
+        title.textContent = '🟢 Nube Sincronizada Activa (Web + App Java)';
+        const redInfo = info.lanUrl ? ` | Acceso en Red Wi-Fi: <code>${info.lanUrl}</code>` : '';
+        detail.innerHTML = `Conectado en tiempo real al servidor unificado (<code>${CLOUD_SYNC_BASE}</code>)${redInfo}`;
+      }
+    } else {
+      box.style.background = '#fef3c7';
+      box.style.borderColor = '#fde68a';
+      box.style.color = '#92400e';
+      title.textContent = '☁️ Modo Almacenamiento Local (LocalStorage)';
+      detail.textContent = 'Inicia ejecutar.bat o pega una URL de Firebase para sincronizar con otras pantallas y con la App Java.';
+    }
+  }
+}
+
+function sincronizarColeccionServidorLocal(coleccion, datos) {
+  if (!servidorLocalConectado) return;
+  fetch(`${CLOUD_SYNC_BASE}/asistencia_db/${coleccion}.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    body: JSON.stringify(datos)
+  }).catch(err => console.warn(`[Nube] Error sincronizando ${coleccion}:`, err));
 }
 
 function sincronizarTodoANube() {
+  const payload = {
+    profesores: estadoLocal.profesores,
+    cursos: estadoLocal.cursos,
+    estudiantes: estadoLocal.estudiantes,
+    asistencias: estadoLocal.asistencias,
+    notas: estadoLocal.notas
+  };
   if (modoNubeActivo && dbFirebase) {
-    dbFirebase.ref('asistencia_db').set({
-      profesores: estadoLocal.profesores,
-      cursos: estadoLocal.cursos,
-      estudiantes: estadoLocal.estudiantes,
-      asistencias: estadoLocal.asistencias,
-      notas: estadoLocal.notas
-    });
+    dbFirebase.ref('asistencia_db').set(payload);
+  }
+  if (servidorLocalConectado) {
+    fetch(`${CLOUD_SYNC_BASE}/asistencia_db.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).catch(err => console.warn('[Nube] Error sincronizando todo:', err));
   }
 }
 
-// Helpers de guardado adaptativos (Nube o Local)
+// Helpers de guardado adaptativos (Nube Firebase + Servidor Web/Java + LocalStorage)
 function guardarCursos(cursos) {
   estadoLocal.cursos = cursos;
   localStorage.setItem(DB_KEYS.CURSOS, JSON.stringify(cursos));
   if (modoNubeActivo && dbFirebase) {
     dbFirebase.ref('asistencia_db/cursos').set(cursos);
   }
+  sincronizarColeccionServidorLocal('cursos', cursos);
 }
 
 function guardarEstudiantes(estudiantes) {
@@ -199,6 +290,7 @@ function guardarEstudiantes(estudiantes) {
   if (modoNubeActivo && dbFirebase) {
     dbFirebase.ref('asistencia_db/estudiantes').set(estudiantes);
   }
+  sincronizarColeccionServidorLocal('estudiantes', estudiantes);
 }
 
 function guardarAsistencias(asistencias) {
@@ -207,6 +299,7 @@ function guardarAsistencias(asistencias) {
   if (modoNubeActivo && dbFirebase) {
     dbFirebase.ref('asistencia_db/asistencias').set(asistencias);
   }
+  sincronizarColeccionServidorLocal('asistencias', asistencias);
 }
 
 function guardarNotas(notas) {
@@ -215,6 +308,7 @@ function guardarNotas(notas) {
   if (modoNubeActivo && dbFirebase) {
     dbFirebase.ref('asistencia_db/notas').set(notas);
   }
+  sincronizarColeccionServidorLocal('notas', notas);
 }
 
 // ==========================================================================
@@ -303,6 +397,12 @@ function cambiarModulo(modulo) {
     const nav = document.getElementById('navContacto');
     if(nav) nav.classList.add('active');
   }
+
+  const activeBtn = document.querySelector('.sidebar-nav .nav-item.active');
+  const breadcrumb = document.getElementById('breadcrumbCurrent');
+  if (breadcrumb && activeBtn) {
+    breadcrumb.textContent = activeBtn.textContent.trim();
+  }
 }
 
 function actualizarModuloActivo() {
@@ -371,6 +471,7 @@ function configurarEventos() {
   // Notas
   document.getElementById('comboCursoNotas')?.addEventListener('change', cargarTablaNotas);
   document.getElementById('comboPeriodoNotas')?.addEventListener('change', cargarTablaNotas);
+  document.getElementById('comboAnioNotas')?.addEventListener('change', cargarTablaNotas);
   document.getElementById('btnGuardarNotas')?.addEventListener('click', guardarNotasModulo);
   document.getElementById('btnExportarNotasCSV')?.addEventListener('click', exportarNotasCSV);
   
@@ -390,19 +491,39 @@ function configurarEventos() {
   document.getElementById('formConfigNube')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const url = document.getElementById('inputDatabaseURL').value.trim();
-    if (url) {
+    if (url && !url.includes('localhost:8080')) {
       localStorage.setItem(DB_KEYS.FIREBASE_URL, url);
-      cerrarModales();
-      showToast('Conectando a la base de datos en la nube...');
-      location.reload();
+    } else {
+      localStorage.removeItem(DB_KEYS.FIREBASE_URL);
     }
+    try {
+      await fetch(`${CLOUD_SYNC_BASE}/api/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ firebaseUrl: (url && !url.includes('localhost:8080')) ? url : '' })
+      });
+    } catch (err) {
+      // Servidor local opcional
+    }
+    cerrarModales();
+    showToast('Configuración de nube guardada y sincronizada con Java');
+    setTimeout(() => location.reload(), 600);
   });
 
-  document.getElementById('btnDesconectarNube')?.addEventListener('click', () => {
+  document.getElementById('btnDesconectarNube')?.addEventListener('click', async () => {
     localStorage.removeItem(DB_KEYS.FIREBASE_URL);
+    try {
+      await fetch(`${CLOUD_SYNC_BASE}/api/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({ firebaseUrl: '' })
+      });
+    } catch (err) {
+      // Ignorar
+    }
     cerrarModales();
-    showToast('Usando almacenamiento local (LocalStorage)');
-    setTimeout(() => location.reload(), 800);
+    showToast('Usando Nube Integrada (Web + Java en tiempo real)');
+    setTimeout(() => location.reload(), 600);
   });
 
   document.querySelectorAll('.btn-close-modal').forEach(btn => {
@@ -970,6 +1091,11 @@ function obtenerDesempeno(promedio) {
   return { texto: 'BAJO', clase: 'badge-ausente' }; // Rojo
 }
 
+function obtenerAnioNotasSeleccionado() {
+  const comboAnio = document.getElementById('comboAnioNotas');
+  return comboAnio && comboAnio.value ? parseInt(comboAnio.value) : new Date().getFullYear();
+}
+
 function cargarTablaNotas() {
   const combo = document.getElementById('comboCursoNotas');
   const comboPeriodo = document.getElementById('comboPeriodoNotas');
@@ -978,7 +1104,7 @@ function cargarTablaNotas() {
 
   const idCurso = parseInt(combo.value);
   const periodo = parseInt(comboPeriodo.value);
-  const year = new Date().getFullYear();
+  const year = obtenerAnioNotasSeleccionado();
   
   tbody.innerHTML = '';
 
@@ -1074,7 +1200,7 @@ function actualizarMetricasNotasDOM(prom, sup, alto, basico, bajo) {
   
   if(mProm) mProm.textContent = prom;
   if(mSup) mSup.textContent = sup;
-  if(mAlto) mAlto.textContent = alto;
+  if(mAlto) mAlto.textContent = mBasico ? alto : (alto + basico);
   if(mBasico) mBasico.textContent = basico;
   if(mBajo) mBajo.textContent = bajo;
 }
@@ -1086,7 +1212,7 @@ function guardarNotasModulo() {
 
   const idCurso = parseInt(combo.value);
   const periodo = parseInt(comboPeriodo.value);
-  const year = new Date().getFullYear();
+  const year = obtenerAnioNotasSeleccionado();
 
   const rows = document.querySelectorAll('#tbodyNotas tr');
   if (rows.length === 0 || !rows[0].dataset.idEstudiante) {
@@ -1131,7 +1257,7 @@ function guardarNotasModulo() {
 function exportarNotasCSV() {
   const idCurso = parseInt(document.getElementById('comboCursoNotas').value);
   const periodo = parseInt(document.getElementById('comboPeriodoNotas').value);
-  const year = new Date().getFullYear();
+  const year = obtenerAnioNotasSeleccionado();
 
   const notasCurso = estadoLocal.notas.filter(n => n.id_curso === idCurso && n.periodo === periodo && n.year === year);
 
@@ -1238,11 +1364,17 @@ function enviarFormularioContacto(e) {
 // ==========================================================================
 function abrirModal(idModal) {
   const modal = document.getElementById(idModal);
-  if(modal) modal.classList.add('active');
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+  }
 }
 
 function cerrarModales() {
-  document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.modal-backdrop').forEach(m => {
+    m.classList.remove('active');
+    m.style.display = 'none';
+  });
 }
 
 function formatearFecha(fechaISO) {

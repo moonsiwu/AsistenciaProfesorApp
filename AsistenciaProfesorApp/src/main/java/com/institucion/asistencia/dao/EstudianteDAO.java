@@ -2,7 +2,9 @@ package com.institucion.asistencia.dao;
 
 import com.institucion.asistencia.model.Estudiante;
 import com.institucion.asistencia.util.ConexionBD;
+import com.institucion.asistencia.util.ServicioNube;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,14 @@ import java.util.List;
 public class EstudianteDAO {
 
     public List<Estudiante> listarPorCurso(int idCurso) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                return ServicioNube.listarEstudiantesPorCurso(idCurso);
+            } catch (IOException e) {
+                throw new SQLException("Error consultando estudiantes en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "SELECT id_estudiante, nombre_completo, documento, id_curso, activo " +
                      "FROM estudiantes WHERE id_curso = ? AND activo = 1 ORDER BY nombre_completo";
         List<Estudiante> lista = new ArrayList<>();
@@ -27,6 +37,14 @@ public class EstudianteDAO {
     }
 
     public Estudiante guardar(Estudiante est) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                return ServicioNube.guardarEstudiante(est);
+            } catch (IOException e) {
+                throw new SQLException(e.getMessage(), e);
+            }
+        }
+
         String sql = "INSERT INTO estudiantes (nombre_completo, documento, id_curso, activo) " +
                      "VALUES (?, ?, ?, 1)";
         try (Connection con = ConexionBD.obtenerConexion();
@@ -46,6 +64,15 @@ public class EstudianteDAO {
     }
 
     public void actualizar(Estudiante est) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                ServicioNube.actualizarEstudiante(est);
+                return;
+            } catch (IOException e) {
+                throw new SQLException("Error actualizando estudiante en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "UPDATE estudiantes SET nombre_completo = ?, documento = ? WHERE id_estudiante = ?";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -58,6 +85,15 @@ public class EstudianteDAO {
 
     /** Baja lógica: se marca como inactivo en vez de borrar el historial de asistencia. */
     public void desactivar(int idEstudiante) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                ServicioNube.desactivarEstudiante(idEstudiante);
+                return;
+            } catch (IOException e) {
+                throw new SQLException("Error dando de baja al estudiante en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "UPDATE estudiantes SET activo = 0 WHERE id_estudiante = ?";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {

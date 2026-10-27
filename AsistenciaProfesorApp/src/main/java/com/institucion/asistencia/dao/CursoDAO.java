@@ -2,7 +2,9 @@ package com.institucion.asistencia.dao;
 
 import com.institucion.asistencia.model.Curso;
 import com.institucion.asistencia.util.ConexionBD;
+import com.institucion.asistencia.util.ServicioNube;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,14 @@ import java.util.List;
 public class CursoDAO {
 
     public List<Curso> listarPorProfesor(int idProfesor) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                return ServicioNube.listarCursosPorProfesor(idProfesor);
+            } catch (IOException e) {
+                throw new SQLException("Error consultando cursos en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "SELECT id_curso, nombre_curso, jornada, id_profesor " +
                      "FROM cursos WHERE id_profesor = ? ORDER BY nombre_curso";
         List<Curso> cursos = new ArrayList<>();
@@ -27,6 +37,14 @@ public class CursoDAO {
     }
 
     public Curso guardar(Curso curso) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                return ServicioNube.guardarCurso(curso);
+            } catch (IOException e) {
+                throw new SQLException("Error guardando curso en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "INSERT INTO cursos (nombre_curso, jornada, id_profesor) VALUES (?, ?, ?)";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -45,6 +63,15 @@ public class CursoDAO {
     }
 
     public void eliminar(int idCurso) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                ServicioNube.eliminarCurso(idCurso);
+                return;
+            } catch (IOException e) {
+                throw new SQLException("Error eliminando curso en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "DELETE FROM cursos WHERE id_curso = ?";
         try (Connection con = ConexionBD.obtenerConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {

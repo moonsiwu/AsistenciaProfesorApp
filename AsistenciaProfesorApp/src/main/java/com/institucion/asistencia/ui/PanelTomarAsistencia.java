@@ -202,12 +202,21 @@ public class PanelTomarAsistencia extends JPanel {
         return panel;
     }
 
-    private void cargarCursos() {
+    public void recargarDesdeNube() {
+        Curso actual = (Curso) comboCurso.getSelectedItem();
+        Integer idSeleccionado = actual != null ? actual.getIdCurso() : null;
         try {
             comboCurso.removeAllItems();
             List<Curso> cursos = cursoDAO.listarPorProfesor(profesor.getIdProfesor());
+            Curso aSeleccionar = null;
             for (Curso c : cursos) {
                 comboCurso.addItem(c);
+                if (idSeleccionado != null && c.getIdCurso() == idSeleccionado) {
+                    aSeleccionar = c;
+                }
+            }
+            if (aSeleccionar != null) {
+                comboCurso.setSelectedItem(aSeleccionar);
             }
             if (!cursos.isEmpty()) {
                 cargarEstudiantesYAsistencia();
@@ -215,6 +224,10 @@ public class PanelTomarAsistencia extends JPanel {
         } catch (SQLException ex) {
             mostrarError("No se pudieron cargar los cursos", ex);
         }
+    }
+
+    private void cargarCursos() {
+        recargarDesdeNube();
     }
 
     private void cargarEstudiantesYAsistencia() {

@@ -1,0 +1,159 @@
+{
+  "profesores": [
+    {
+      "id_profesor": 1,
+      "nombre_completo": "Carlos Andrés Pérez",
+      "usuario": "profesor1",
+      "contrasena": "123456",
+      "correo": "carlos.perez@institucion.edu.co",
+      "telefono": "+57 300 123 4567",
+      "departamento": "Ciencias y Tecnología",
+      "especialidad": "Matemáticas y Física",
+      "titulo": "Licenciatura en Matemáticas",
+      "bio": "Docente con más de 10 años de experiencia en educación secundaria...",
+      "horario": "Lunes a Viernes, 7:00 AM - 3:00 PM"
+    }
+  ],
+  "cursos": [
+    {
+      "id_curso": 1,
+      "nombre_curso": "10-A",
+      "jornada": "Mañana",
+      "id_profesor": 1
+    },
+    {
+      "id_curso": 2,
+      "nombre_curso": "11-B",
+      "jornada": "Tarde",
+      "id_profesor": 1
+    }
+  ],
+  "estudiantes": [
+    {
+      "id_estudiante": 1,
+      "nombre_completo": "Ana María Gómez",
+      "documento": "1001234567",
+      "id_curso": 1,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 2,
+      "nombre_completo": "Juan Esteban Rojas",
+      "documento": "1001234568",
+      "id_curso": 1,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 3,
+      "nombre_completo": "Laura Sofía Díaz",
+      "documento": "1001234569",
+      "id_curso": 1,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 4,
+      "nombre_completo": "Miguel Ángel Torres",
+      "documento": "1001234570",
+      "id_curso": 2,
+      "activo": 1
+    },
+    {
+      "id_estudiante": 5,
+      "nombre_completo": "Valentina Castro",
+      "documento": "1001234571",
+      "id_curso": 2,
+      "activo": 1
+    }
+  ],
+  "asistencias": [
+    {
+      "id_asistencia": 1,
+      "id_estudiante": 1,
+      "id_curso": 1,
+      "id_profesor": 1,
+      "fecha": "2026-10-27",
+      "estado": "PRESENTE",
+      "observacion": "Llegó puntual"
+    },
+    {
+      "id_asistencia": 2,
+      "id_estudiante": 2,
+      "id_curso": 1,
+      "id_profesor": 1,
+      "fecha": "2026-10-27",
+      "estado": "TARDE",
+      "observacion": "Ingreso 10 min tarde"
+    },
+    {
+      "id_asistencia": 3,
+      "id_estudiante": 3,
+      "id_curso": 1,
+      "id_profesor": 1,
+      "fecha": "2026-10-27",
+      "estado": "PRESENTE",
+      "observacion": ""
+    }
+  ],
+  "notas": [
+    {
+      "id_nota": 1,
+      "id_estudiante": 1,
+      "id_curso": 1,
+      "periodo": 1,
+      "nota1": 4.5,
+      "nota2": 3.8,
+      "nota3": 4.2,
+      "nota4": 4,
+      "promedio": 4.13,
+      "year": 2026
+    },
+    {
+      "id_nota": 2,
+      "id_estudiante": 2,
+      "id_curso": 1,
+      "periodo": 1,
+      "nota1": 3,
+      "nota2": 2.8,
+      "nota3": 3.5,
+      "nota4": 3.2,
+      "promedio": 3.13,
+      "year": 2026
+    },
+    {
+      "id_nota": 3,
+      "id_estudiante": 3,
+      "id_curso": 1,
+      "periodo": 1,
+      "nota1": 4.8,
+      "nota2": 4.9,
+      "nota3": 5,
+      "nota4": 4.7,
+      "promedio": 4.85,
+      "year": 2026
+    },
+    {
+      "id_nota": 4,
+      "id_estudiante": 4,
+      "id_curso": 2,
+      "periodo": 1,
+      "nota1": 3.5,
+      "nota2": 3,
+      "nota3": 3.8,
+      "nota4": 3.3,
+      "promedio": 3.4,
+      "year": 2026
+    },
+    {
+      "id_nota": 5,
+      "id_estudiante": 5,
+      "id_curso": 2,
+      "periodo": 1,
+      "nota1": 2.5,
+      "nota2": 2,
+      "nota3": 2.8,
+      "nota4": 2.3,
+      "promedio": 2.4,
+      "year": 2026
+    }
+  ]
+}

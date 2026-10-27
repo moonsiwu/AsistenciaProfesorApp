@@ -2,10 +2,13 @@ package com.institucion.asistencia.dao;
 
 import com.institucion.asistencia.model.Asistencia;
 import com.institucion.asistencia.util.ConexionBD;
+import com.institucion.asistencia.util.ServicioNube;
 
+import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AsistenciaDAO {
@@ -16,6 +19,15 @@ public class AsistenciaDAO {
      * de duplicarlo (gracias a la restricción UNIQUE(id_estudiante, fecha)).
      */
     public void registrar(Asistencia a) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                ServicioNube.registrarAsistenciasLote(Collections.singletonList(a));
+                return;
+            } catch (IOException e) {
+                throw new SQLException("Error guardando asistencia en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "INSERT INTO asistencias (id_estudiante, id_curso, id_profesor, fecha, estado, observacion) " +
                      "VALUES (?, ?, ?, ?, ?, ?) " +
                      "ON DUPLICATE KEY UPDATE estado = VALUES(estado), observacion = VALUES(observacion), " +
@@ -35,6 +47,15 @@ public class AsistenciaDAO {
 
     /** Guarda una lista completa de registros (toma de asistencia de un curso en un día). */
     public void registrarLote(List<Asistencia> registros) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                ServicioNube.registrarAsistenciasLote(registros);
+                return;
+            } catch (IOException e) {
+                throw new SQLException("Error sincronizando asistencia en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "INSERT INTO asistencias (id_estudiante, id_curso, id_profesor, fecha, estado, observacion) " +
                      "VALUES (?, ?, ?, ?, ?, ?) " +
                      "ON DUPLICATE KEY UPDATE estado = VALUES(estado), observacion = VALUES(observacion), " +
@@ -65,6 +86,14 @@ public class AsistenciaDAO {
 
     /** Trae lo ya registrado para un curso en una fecha (para precargar la pantalla de toma de asistencia). */
     public List<Asistencia> listarPorCursoYFecha(int idCurso, LocalDate fecha) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                return ServicioNube.listarAsistenciasPorCursoYFecha(idCurso, fecha);
+            } catch (IOException e) {
+                throw new SQLException("Error consultando asistencias en la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "SELECT a.*, e.nombre_completo AS nombre_estudiante " +
                      "FROM asistencias a JOIN estudiantes e ON a.id_estudiante = e.id_estudiante " +
                      "WHERE a.id_curso = ? AND a.fecha = ?";
@@ -85,6 +114,14 @@ public class AsistenciaDAO {
 
     /** Historial de un curso entre dos fechas (para el reporte). */
     public List<Asistencia> reportePorCurso(int idCurso, LocalDate desde, LocalDate hasta) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                return ServicioNube.reporteAsistenciasPorCurso(idCurso, desde, hasta);
+            } catch (IOException e) {
+                throw new SQLException("Error generando reporte desde la nube: " + e.getMessage(), e);
+            }
+        }
+
         String sql = "SELECT a.*, e.nombre_completo AS nombre_estudiante " +
                      "FROM asistencias a JOIN estudiantes e ON a.id_estudiante = e.id_estudiante " +
                      "WHERE a.id_curso = ? AND a.fecha BETWEEN ? AND ? " +

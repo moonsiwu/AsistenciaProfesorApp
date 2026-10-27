@@ -3,7 +3,9 @@ package com.institucion.asistencia.dao;
 import com.institucion.asistencia.model.Profesor;
 import com.institucion.asistencia.util.ConexionBD;
 import com.institucion.asistencia.util.PasswordUtil;
+import com.institucion.asistencia.util.ServicioNube;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,10 +14,19 @@ import java.sql.SQLException;
 public class ProfesorDAO {
 
     /**
-     * Valida usuario y contraseña contra la base de datos.
+     * Valida usuario y contraseña contra la base de datos en la Nube (Firebase / Cloud Sync)
+     * o contra MySQL si está configurado en modo local exclusivo.
      * Devuelve el Profesor si las credenciales son correctas, o null si no.
      */
     public Profesor autenticar(String usuario, String contrasenaPlano) throws SQLException {
+        if (ServicioNube.esModoNubeActivo()) {
+            try {
+                return ServicioNube.autenticarProfesor(usuario, contrasenaPlano);
+            } catch (IOException e) {
+                System.err.println("[ProfesorDAO] Aviso nube, intentando respaldo MySQL: " + e.getMessage());
+            }
+        }
+
         String sql = "SELECT id_profesor, nombre_completo, usuario, contrasena, correo " +
                      "FROM profesores WHERE usuario = ?";
 
